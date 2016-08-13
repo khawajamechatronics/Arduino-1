@@ -1,0 +1,32 @@
+#######################################
+# Syntax Coloring Map PWM
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin KEYWORD2
+WhoAmI KEYWORD2
+readRegs KEYWORD2
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+ps_1 LITERAL1
+ps_8 LITERAL1
+ps_64 LITERAL1
+ps_256 LITERAL1
+ps_1024 LITERAL1
+
+psalt_1 LITERAL1
+psalt_8 LITERAL1
+psalt_32 LITERAL1
+psalt_64 LITERAL1
+psalt_128 LITERAL1
+psalt_256 LITERAL1
+psalt_1024 LITERAL1

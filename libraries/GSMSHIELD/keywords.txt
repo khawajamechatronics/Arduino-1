@@ -1,0 +1,33 @@
+#######################################
+# Syntax Coloring Map For GSMShield
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+httpGET	KEYWORD2
+httpPOST	KEYWORD2
+openmail	KEYWORD2
+closemail	KEYWORD2
+attachGPRS	KEYWORD2
+detachGPRS	KEYWORD2
+connectTCP	KEYWORD2
+connectUDP	KEYWORD2
+disconnectTCPUDP	KEYWORD2
+connectTCPServer	KEYWORD2
+connectedClient	KEYWORD2
+
+#################################
+#   SMS class
+#################################
+ SendSMS KEYWORD2
+ IsSMSPresent	KEYWORD2
+ GetSMS	KEYWORD2
+ 
+ GetAuthorizedSMS	KEYWORD2
+ DeleteSMS	KEYWORD2

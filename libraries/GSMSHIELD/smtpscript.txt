@@ -1,0 +1,67 @@
+AT+EMAILTO=60
+AT+EMAILSSL=1
+AT+SMTPCS="ASCII"
+AT+SAPBR=3,1,"Contype","GPRS"
+AT+SAPBR=3,1,"APN","uinternet"
+AT+SAPBR=2,1
+AT+SAPBR=1,1
+AT+SAPBR=0,1
+AT+SMTPSRV="smtp.mail.yahoo.com",465
+AT+SMTPAUTH=1,"david_henry.geo@yahoo.com","Mga1958x"
+AT+SMTPFROM="david_henry.geo@yahoo.com","TAP 1"
+AT+SMTPRCPT=0,0,"mgadriver@gmail.com","house"
+AT+SMTPSUB="BLAH"
+AT+SMTPBODY
+AT+SMTPBODY=?
+AT+SMTPSEND
+
+AT+SMTPRCPT=?
+AT+SMTPFROM?
+
+sender & subscriber, server, auth all cleared after mail sent
+AT+SMTPBODY=? gives overall buffer size, not remaining
+GSM Shield testing.
+
+AT+SAPBR=0,1                                                        
+GSM Shield testing.
+
+                                                         
+GSM Shield testing.
+
+                                                         
+
++SMTPSUB="BLAH"
+                                                              
+OK
+                                                                            
+
++SMTPBODY
+                                                                    
+> line 1
+                                                                      
+
+                                                                             
+OK
+                                                                            
+AT+SMTPBODY
+
+                                                                 
+                                                                                
+> line 2
+                                                                      
+
+                                                                             
+OK
+                                                                            
+AT+SMTPSEND                                                                               
+OK
++SMTPSEND: 1                                                                 
+AT+SAPBR=0,1
+OK
+
+AT+SAPBR=3,1,"Contype","GPRS"
+
+AT+SAPBR=3,1,"APN","uinternet"
+
+AT+SAPBR=1,1
+
