@@ -1,0 +1,2 @@
+void Parse(char * s);
+
