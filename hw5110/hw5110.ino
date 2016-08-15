@@ -17,11 +17,11 @@
  You will need 5 signal lines to connect to the LCD, 3.3 or 5V for power, 3.3V for LED backlight, and 1 for ground.
  */
 
-#define PIN_SCE   4 //Pin 3 on LCD
-#define PIN_RESET 3 //Pin 4 on LCD
+#define PIN_SCE   7 //Pin 3 on LCD
+#define PIN_RESET 6 //Pin 4 on LCD
 #define PIN_DC    5 //Pin 5 on LCD
-#define PIN_SDIN  6 //Pin 6 on LCD
-#define PIN_SCLK  7 //Pin 7 on LCD
+#define PIN_SDIN  4 //Pin 6 on LCD
+#define PIN_SCLK  3 //Pin 7 on LCD
 
 //The DC pin tells the LCD if we are sending a command or data
 #define LCD_COMMAND 0 
@@ -319,7 +319,7 @@ void LCDInit(void) {
   digitalWrite(PIN_RESET, HIGH);
 
   LCDWrite(LCD_COMMAND, 0x21); //Tell LCD that extended commands follow
-  LCDWrite(LCD_COMMAND, 0x80 | 0x60); //Set LCD Vop (Contrast): Try 0xB1(good @ 3.3V) or 0xBF if your display is too dark
+  LCDWrite(LCD_COMMAND, 0xB0); //Set LCD Vop (Contrast): Try 0xB1(good @ 3.3V) or 0xBF if your display is too dark
   LCDWrite(LCD_COMMAND, 0x04); //Set Temp coefficent
   LCDWrite(LCD_COMMAND, 0x14); //LCD bias mode 1:48: Try 0x13 or 0x14
 

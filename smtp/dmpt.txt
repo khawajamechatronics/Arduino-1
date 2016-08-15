@@ -1,0 +1,20 @@
+davidh@zickel.net
+ZGF2aWRoQHppY2tlbC5uZXQ=
+
+
+henryd
+
+aGVucnlk
+
+ehlo mail.zickel.net
+auth plain login
+ZGF2aWRoQHppY2tlbC5uZXQ=
+aGVucnlk
+
+ehlo mail.barak-online.net
+auth login
+aGVucnk4QGJhcmFrLW9ubGluZS5uZXQ=
+bW9ycmlzNTk=
+
+henry8@barak-online.net
+morris59
