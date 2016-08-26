@@ -1,4 +1,4 @@
-#define SWS
+//#define SWS
 #define THRU
 
 #ifdef SWS
