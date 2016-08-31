@@ -12,7 +12,6 @@
 #include "wcEEPROM.h"
 #include "DS3234.h"
 
-
 char * EEPROMGetIndex(enum eEEPROMIndex);
 
 SMSGSM sms;
@@ -188,7 +187,7 @@ bool RemoteSendEmail(char *msg)
 }
 bool RemoteSetClock(char *s)
 {
-  return smtp.SmtpSetClock(s);
+  return gsm.SetClock(s);
   //return true;
 }
 
@@ -198,15 +197,20 @@ char *RemoteGetClock()
   //return smtp.SmtpGetClock();
   //return "16/12/1 2:3:4+12";
   // string includes quotes and spaces so trim those
-  cs = strchr(smtp.SmtpGetClock(),'\"');
-  cs++;
-  ce = strchr(cs,'+');
-  *ce = 0;
-//  Serial.println(cs);
-//  Serial.println(urlencode(cs,cooked));
-//  Serial.println(cooked);
-  urlencode(cs,cooked);
-  return cooked;
+  cs = strchr(gsm.GetClock(),'\"');
+  if (cs)
+  {
+    cs++;
+    ce = strchr(cs,'+');
+    *ce = 0;
+  //  Serial.println(cs);
+  //  Serial.println(urlencode(cs,cooked));
+  //  Serial.println(cooked);
+    urlencode(cs,cooked);
+    return cooked;    
+  }
+  else
+    return "0";
 }
 
 int urlencode(char *src, char *tgt)
@@ -232,8 +236,14 @@ int urlencode(char *src, char *tgt)
 int HTTPGet(char *server,char *url,char *buf, int buflen)
 {
   char *c;
-  int rc;
-  int CR = inet.httpGET(server, 80, url, buf, buflen);
+  int rc,CR;
+#ifdef ANTENNA_BUG
+//  ignoreMeter = true;     // set true while transmitting
+#endif
+  CR = inet.httpGET(server, 80, url, buf, buflen);
+#ifdef ANTENNA_BUG
+ // ignoreMeter = false; 
+#endif
   Serial.print("Length of data received: ");
   Serial.println(CR);  
     // extract return code from Nth line HTTP/1.1 200 OK
