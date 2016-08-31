@@ -1,8 +1,8 @@
 #ifndef GSM_H
 #define GSM_H
 
-#define UNO
-//#define MEGA
+//#define UNO
+#define MEGA
 
 #include <SoftwareSerial.h>
 #include <inttypes.h>
@@ -17,7 +17,7 @@
 #define lf    10 //Ascii character for line feed.
 #define GSM_LIB_VERSION 308 // library version X.YY (e.g. 1.00)
 
-#define DEBUG_ON
+//#define DEBUG_ON
 
 
 #ifdef MEGA
@@ -51,7 +51,7 @@
 #define DTMF_DATA3          75 // connect DTMF Data3 to pin 75
 
 // length for the internal communication buffer
-#define COMM_BUF_LEN        200
+#define COMM_BUF_LEN        1000  // to accomodate our html replies
 
 // some constants for the IsRxFinished() method
 #define RX_NOT_STARTED      0
@@ -221,7 +221,8 @@ class GSM
                 char const *response_string,
                 byte no_of_attempts);	
 	void Echo(byte state);
-
+	bool SetClock(char *);
+	char *GetClock();
 
 	//-----------------------
 	// turns off/on the speaker

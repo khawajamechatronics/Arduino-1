@@ -27,6 +27,9 @@ based on QuectelM10 chip.
 #define _GSM_TXPIN_ 2
 #define _GSM_RXPIN_ 3	
 
+static const char *OK = "OK";
+
+bool writewithtimeout(char *buf,const char *response,unsigned long start,unsigned long interchar);
 
 #ifdef UNO
 GSM::GSM():_cell(_GSM_TXPIN_,_GSM_RXPIN_),_tf(_cell, 10),_status(IDLE){
@@ -741,8 +744,33 @@ int GSM::isIP(const char* cadena)
     return 1;
 }
 
+bool GSM::SetClock(char *s)
+{
+	char printbuf[40];
+	strcpy(printbuf,"AT+CCLK=\"");
+	strcat(printbuf,s);
+	strcat(printbuf,"\"\r");
+	//sprintf(printbuf,"AT+CCLK=\"%s\"\r",s);	
+	return writewithtimeout(printbuf,OK,1000,150);
+}
 
 
+static char smsTime[30];
+char *GSM::GetClock()
+{
+	if (writewithtimeout("AT+CCLK?\r",OK,1000,150))
+	{
+		// scan up to CCLK:, replace \r by 0
+		char *start = strstr((char *)comm_buf, "+CCLK:");
+		start += 6; // skip over
+		char *end = strchr(start,0x0d);
+		*end = 0;	// replace CR by null
+		strcpy(smsTime,start);
+		return smsTime;
+	}
+	else
+		return 0;
+}
 
 
 

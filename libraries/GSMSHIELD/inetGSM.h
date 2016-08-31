@@ -9,6 +9,8 @@ class InetGSM
 {
   private:
     char _buffer[BUFFERSIZE];
+	int cid;
+	char printbuf[30];
     
   public:
     int httpGET(const char* server, int port, const char* path, char* result, int resultlength);
@@ -25,10 +27,11 @@ class InetGSM
     int disconnectUDP();
     int connectTCPServer(int port);
     boolean connectedClient();
-
+	bool OpenGprs(int cid,char *apn,int responsetime);
+	bool CloseGprs(int cid);
     // This runs, yes
     //int tweet(const char* token, const char* msg);
-
+	char *GetGprsIP(int cid);
 };
 
 #endif

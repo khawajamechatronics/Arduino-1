@@ -2,6 +2,8 @@
 #define _GSM_CONNECTION_TOUT_ 5
 #define _TCP_CONNECTION_TOUT_ 20
 #define _GSM_DATA_TOUT_ 10
+bool writewithtimeout(char *buf,const char *response,unsigned long start,unsigned long interchar);
+static const char *OK = "OK";
 
 int InetGSM::httpGET(const char* server, int port, const char* path, char* result, int resultlength)
 {
@@ -11,7 +13,7 @@ int InetGSM::httpGET(const char* server, int port, const char* path, char* resul
   char end_c[2];
   end_c[0]=0x1a;
   end_c[1]='\0';
-
+	int res;
   /*
   Status = ATTACHED.
   if(gsm.getStatus()!=GSM::ATTACHED)
@@ -51,12 +53,39 @@ int InetGSM::httpGET(const char* server, int port, const char* path, char* resul
   }
   
   
- delay(50);
+ //delay(2000);
   	#ifdef DEBUG_ON
 		Serial.println("DB:SENT");
 	#endif	
+#if 0
   int res= gsm.read(result, resultlength);
-
+#else
+	byte status;
+	bool success = false;
+	// 1 sec. for initial comm tmout (some PHP mailer takes 5 secs)
+    // and max. 150 msec. for inter character timeout
+	gsm.RxInit(15000, 2000); 
+	// wait response is finished
+	do
+	{
+		if (gsm.IsStringReceived("OK"))
+		{ 
+			// perfect - we have some response, but what:
+			status = RX_FINISHED;
+			success = true;
+			break; // so finish receiving immediately and let's go to 
+             // to check response 
+		}
+		status = gsm.IsRxFinished();
+	} while (status == RX_NOT_FINISHED);
+	if (success)
+	{
+		memcpy(result,gsm.comm_buf,resultlength);
+		res = 30; // covers 1st line
+	}
+	else
+		res = 0;
+#endif
   //gsm.disconnectTCP();
   
   //int res=1;
@@ -620,4 +649,65 @@ boolean InetGSM::connectedClient()
   else
     return false;
  }
+bool InetGSM::OpenGprs(int CID,char *apn,int responsetime)
+{
+	bool success = false;
+	cid = CID;
+	sprintf(printbuf,"AT+SAPBR=3,%d,\"CONTYPE\",\"GPRS\"\r",cid);
+	if (writewithtimeout(printbuf,OK,1000,1000))
+	{
+		delay(2000);
+		sprintf(printbuf,"AT+SAPBR=3,%d,\"APN\",\"%s\"\r",cid,apn);
+//#ifdef DEBUG_ON
+#if 1
+		Serial.println("DEBUG:Inet OPENGPRS");
+		Serial.println(printbuf);
+#endif
+		if (writewithtimeout(printbuf,OK,10000,150))
+		{
+			delay(2000);
+			sprintf(printbuf,"AT+SAPBR=1,%d\r",cid);
+//#ifdef DEBUG_ON
+#if 1
+			Serial.println(printbuf);
+			Serial.println(responsetime);
+#endif
+			success = (writewithtimeout(printbuf,OK,responsetime*1000,responsetime*1000));
+		}
+	}
+	return success;
+}
 
+bool InetGSM::CloseGprs(int CID)
+{
+	sprintf(printbuf,"AT+SAPBR=0,%d\r",CID);
+#ifdef DEBUG_ON
+	Serial.println("DEBUG:Inet CLOSEGPRS");
+	Serial.println(printbuf);
+#endif
+	return writewithtimeout(printbuf,OK,1000,150);
+}
+
+char *InetGSM::GetGprsIP(int CID)
+{
+	char *cs,*ce;
+	sprintf(printbuf,"AT+SAPBR=2,%d\r",CID);
+#ifdef DEBUG_ON
+	Serial.println("DEBUG:Inet GetGPRSIP");
+	Serial.println(printbuf);
+#endif
+	if  (writewithtimeout(printbuf,OK,1000,150))
+	{
+		// reply like this +SAPBR: 1,1,"10.173.225.36"
+#ifdef DEBUG_ON
+		Serial.println("DEBUG:Inet reply");
+		Serial.println((char *)gsm.comm_buf);
+#endif
+		cs = strchr((char *)gsm.comm_buf,'\"');
+		ce = strchr(++cs,'\"');
+		*ce = 0;
+		return cs;
+	}
+	else
+		return 0;
+}
