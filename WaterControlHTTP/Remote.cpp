@@ -7,23 +7,16 @@
 // added messaging via email as that is cheaper than SMS. 
 #include "SIM900.h"
 #include "sms.h"
-#include "smtp.h"
+//#include "smtp.h"
 #include "inetGSM.h"
 #include "wcEEPROM.h"
-#include "DS3234.h"
+//#include "DS3234.h"
 
 char * EEPROMGetIndex(enum eEEPROMIndex);
 
 SMSGSM sms;
-SMTPGSM smtp;
+//SMTPGSM smtp;
 InetGSM inet;
-
-#define USESSL
-#ifdef USESSL
-int ServerPort = 465;
-#else
-int ServerPort = 25;
-#endif
 
 char LastIncomingPhone[20];
 boolean started=false;
@@ -102,93 +95,9 @@ bool RemoteMessageAvailable(char *msg,char *timestamp)
       return false; 
 }
 
-bool RemoteSendEmail(char *msg)
-{
-  return true;
-  bool rc = false;
-  char *cp,cpw[20],cuser[30];
-#ifdef ANTENNA_BUG
-  ignoreMeter = true;
-#endif
-  if (smtp.SmtpOpenGprs(SMTPCID,EEPROMGetIndex(APN)))
-  {
-    smtp.SmtpTimeout(60);
-    smtp.SmtpSetCS(smtp.ASCII);
-    Serial.println("open gprs passed");
-#ifdef USESSL
-    smtp.SmtpSetSSL(true);
-#else
-    smtp.SmtpSetSSL(false);
-#endif
-    cp = EEPROMGetIndex(EA);
-    Serial.print("Sender ");
-    Serial.println(cp);
-    if (smtp.SmtpSetSender(cp,"Water Meter"))
-    {
-      Serial.println("set sender passed");
-      cp = EEPROMGetIndex(SmS);
-      Serial.print("Server ");
-      Serial.println(cp);
-      if (smtp.SmtpSetServer(cp,ServerPort))
-      {
-        Serial.println("set server passed");
-        strcpy(cuser,EEPROMGetIndex(EA));
-        Serial.print("Login ");
-        Serial.println(cuser);
-        strcpy(cpw,EEPROMGetIndex(EP));
-        Serial.print("PW ");
-        Serial.println(cpw);
-        if (smtp.SmtpSetLogin(cuser,cpw))
-        {
-          Serial.println("set login passed");
-          cp = EEPROMGetIndex(ER);
-          Serial.print("Receiver ");
-          Serial.println(cp);
-          if (smtp.SmtpSetRecipient(smtp.TO,0,cp,"anyone"))
-          {
-            Serial.println("set rcp passed");
-            if (smtp.SmtpSetSubject("Water Meter Message"))
-            {
-              Serial.println("set subject passed");
-              if (smtp.SmtpSendBody(msg))
-              {
-                 Serial.println("send body passed");
-                 rc = true;
-              }
-              else
-                Serial.println("send body failed");
-              smtp.SmtpCloseGprs(SMTPCID);
-            }
-            else
-              Serial.println("set subject failed");
-          }
-          else
-            Serial.println("set rcp failed");
-        }
-        else
-          Serial.println("set sender failed");
-      }
-      else
-        Serial.println("set login failed");
-    }
-    else
-      Serial.println("set server failed");
-  }
-  else
-  {
-    Serial.println("open gprs failed");
-  } 
-  if (smtp.SmtpCloseGprs(SMTPCID))
-    Serial.println("closed gprs");
-#ifdef ANTENNA_BUG
-  ignoreMeter = false;
-#endif
-  return rc; 
-}
 bool RemoteSetClock(char *s)
 {
   return gsm.SetClock(s);
-  //return true;
 }
 
 char *RemoteGetClock()
@@ -292,5 +201,15 @@ bool RemoteSendMessage(char * srv, char *url, int port) // to http server
     success = (rc == 200);
   }
   return success;
+}
+
+bool RemoteSendSMS(char *msg, char *pn)
+{
+  return sms.SendSMS(pn, msg);
+}
+
+bool RemoteSendSMS(char *msg)
+{
+  return sms.SendSMS(EEPROMGetIndex(DP),msg);
 }
 

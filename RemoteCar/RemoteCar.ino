@@ -1,5 +1,5 @@
 #include <IRremote.h>
-#include "keyes.h"
+#include "remote.h"
 
 /*OPEN JUMPER L298 Shield*/
 // default values by shorting jumpers
@@ -9,7 +9,8 @@
  int INB = 7;  // direction motor B
  int PWMB = 6; 
  int dir = 0;
- int pwmvalue = 0;
+ int pwmvalueleft = 0;
+ int pwmvalueright = 0;
  
 // IR control
 int RECV_PIN = 11;
@@ -23,6 +24,7 @@ unsigned long timeold;
 // number of pulses per revolution
 // based on your encoder disc
 unsigned int pulsesperturn = 20;
+enum eDirection{forward,reverse,left,right};
 
 void counter()
 {
@@ -45,19 +47,30 @@ void counter()
    timeold = 0;
  }
 
+void cardir(enum eDirection d)
+{
+  switch (d)
+  {
+    case forward:
+      digitalWrite(INA,HIGH);
+      digitalWrite(INB,HIGH);          
+      break;
+    case reverse:
+      digitalWrite(INA,LOW);
+      digitalWrite(INB,LOW);          
+      break;
+    case left:
+      digitalWrite(INA,HIGH);
+      digitalWrite(INB,LOW);          
+      break;
+    case right:
+      digitalWrite(INA,LOW);
+      digitalWrite(INB,HIGH);          
+      break;    
+  }
+}
 void loop() {
    int command;
-    if (millis() - timeold >= 1000) {
-      //Don't process interrupts during calculations
-      detachInterrupt(0);
-      rpm = (60 * 1000 / pulsesperturn )/ (millis() - timeold)* pulses;
-      timeold = millis();
-      pulses = 0;
-      Serial.print("RPM = ");
-      Serial.println(rpm,DEC);
-      //Restart the interrupt processing
-      attachInterrupt(0, counter, FALLING);
-    }
    // read message from IR (if any)
   if (irrecv.decode(&results))
   {
@@ -66,12 +79,13 @@ void loop() {
     switch (command)
     {
       case onoff:
-        pwmvalue = 0;
+        pwmvalueleft = 0;
+        pwmvalueright = 0;
         dir = 0;
         digitalWrite(INA,HIGH);
         digitalWrite(INB,HIGH);          
-        analogWrite(PWMA,pwmvalue);
-        analogWrite(PWMB,pwmvalue);
+//        analogWrite(PWMA,pwmvalueleft);
+//        analogWrite(PWMB,pwmvalueright);
         Serial.println("Stop");
         break;
       case plus: // faster
@@ -79,19 +93,25 @@ void loop() {
         if (command == plus)
         {
           Serial.println("faster");
-          pwmvalue += 10;
-          pwmvalue %= 255;          
+          pwmvalueleft += 10;
+          pwmvalueleft %= 255;          
+          pwmvalueright += 10;
+          pwmvalueright %= 255;          
         }
         else
         {
-          pwmvalue -= 10;
+          pwmvalueleft -= 10;
+          pwmvalueright -= 10;
           Serial.println("slower");
-          if (pwmvalue < 0)
-            pwmvalue = 0;
-          pwmvalue %= 255;  
+          if (pwmvalueleft < 0)
+            pwmvalueleft = 0;
+          pwmvalueleft %= 255;  
+          if (pwmvalueright < 0)
+            pwmvalueright = 0;
+          pwmvalueright %= 255;  
         }
-        analogWrite(PWMA,pwmvalue);
-        analogWrite(PWMB,pwmvalue);
+//        analogWrite(PWMA,pwmvalueleft);
+//        analogWrite(PWMB,pwmvalueright);
         break;
       case cd:
         dir = 1-dir; // toggle between 0/1
@@ -108,8 +128,45 @@ void loop() {
           digitalWrite(INB,LOW);      
         }
         break;
+        /*
+         *              2 fwd
+         *              
+         *       left 4 5 6 right
+         *       
+         *              7 back
+         *           
+         *           5 stop
+         */
+       case two:
+         cardir(forward);
+         Serial.println("forward");
+         break;
+       case four:
+//         cardir(left);
+         pwmvalueright = (pwmvalueright * 3)/4;
+         Serial.println("left");
+         break;
+       case six:
+//         cardir(right);
+         pwmvalueleft = (pwmvalueleft * 3)/4;
+         Serial.println("right");
+        break;
+       case eight:
+         cardir(reverse);
+        Serial.println("reverse");
+         break;
+       case ff: // fast forward
+         cardir(forward);
+         pwmvalueright = pwmvalueleft = 255;
+        break;
+       case rw: // fast reverse
+         cardir(reverse);
+         pwmvalueright = pwmvalueleft = 255;
+        break;
     }
     irrecv.resume(); // Receive the next value
   }
   delay (100);
+  analogWrite(PWMA,pwmvalueleft);
+  analogWrite(PWMB,pwmvalueright);
 }

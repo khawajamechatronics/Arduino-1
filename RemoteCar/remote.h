@@ -21,10 +21,11 @@
 #define EIGHT 0Xff4AB5
 #define NINE 0Xff52AD
 // array and enum must be in the same order
-static unsigned long codes[] = {ZERO,ONE,TWO,THREE,FOUR,FIVE,SIX,SEVEN,EIGHT,NINE,
+unsigned long codes[] = {ZERO,ONE,TWO,THREE,FOUR,FIVE,SIX,SEVEN,EIGHT,NINE,
   ONOFF,MODE,MUTE,FF,REWIND,NEXTTRACK,EQ,PLUS,MINUS,CHANGEDIR,USD};
 enum eIR {zero=0,one,two,three,four,five,six,seven,eight,nine,
   onoff,mode,mute,ff,rw,nt,eq,plus,minus,cd,usd,none};
+// prototype
 enum eIR irdecode(unsigned long code)
 {
   for (int i=0;i<none;i++)

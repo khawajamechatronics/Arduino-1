@@ -2,10 +2,10 @@
 use WaterMeter;
 #show tables;
 #create table;
-#Create table rawdata (imei char(15) not NULL, action ENUM ('ping','powerup','leak','eepromreport','tapchange','report','reset')
-#default 'report' ,
+#Create table rawdata (imei char(15) not NULL, action ENUM ('ping','powerup','leak','eepromreport','tapchange','report',
+# 'reset','calibrate') default 'report' ,
 #tap ENUM ('unknown','tapopen','tapclose') default 'unknown', uptime integer,meterticks integer,rawts varchar(30),liters integer,
-#serverts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,imsi char(15));
+#serverts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,imsi char(15), ExternalMeter float, IP char(15));
 #show tables;
 #Create table EEPROM (imei char(15) ,tpl integer,lis integer, ph varchar(20), 
 #  smtps varchar(30),ea varchar(30),pword varchar(20),
@@ -29,6 +29,11 @@ use WaterMeter;
 #select * from rawdata where action = 'report' order by serverts desc;
 #alter table rawdata add actionnumber int not null AUTO_INCREMENT primary key;
 #select * from rawdata where  TIMESTAMPDIFF(SECOND,serverts,CURRENT_TIMESTAMP) < 10800 and action = 'report' order by serverts desc;
-select * from rawdata order by serverts desc;
+select * from rawdata order by serverts desc limit 100;
 #select TIMESTAMPDIFF(SECOND,'2016-08-26 18:00:00',CURRENT_TIMESTAMP);
 #select * from rawdata where serverts > '2016-08-26 15:00:00' and action = 'report' order by serverts desc
+#alter table  EEPROM add TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+#select * from EEPROM order by TS desc;
+#alter table rawdata add ExternalMeter float;
+#insert into rawdata (ExternalMeter) values(759.0201);
+#alter table rawdata change action action ENUM ('ping','powerup','leak','eepromreport','tapchange','report','reset','calibrate') default 'report';

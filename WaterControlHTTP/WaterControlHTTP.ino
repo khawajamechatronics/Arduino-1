@@ -101,13 +101,16 @@ void Analyze()
         RGBActivate(RED_LED,LED_ON);
         // sanity check, leak detected and tap open or closed
         // send message
-      sprintf(tempbuf,"/WaterControl/RawData.php?action=leak&imei=%s&uptime=%lu&meterticks=%lu&liters=%lu&tap=%s&rawts=%s",
-        IMEI,millis()/1000,metercount,metercount/TicksPerLiter,TapToText(),RemoteGetClock());
+        sprintf(tempbuf,"/WaterControl/RawData.php?action=leak&imei=%s&uptime=%lu&meterticks=%lu&liters=%lu&tap=%s&rawts=%s",
+          IMEI,millis()/1000,metercount,metercount/TicksPerLiter,TapToText(),RemoteGetClock());
         TapChangeState(TAP_CLOSE);
         if (RemoteSendMessage(EEPROMGetIndex(HTTPs),tempbuf,80))
           Serial.println("alarm sent OK");
         else
            Serial.println("alarm not sent");
+        sprintf(tempbuf,"leak uptime=%lu ts=%s",millis()/1000,RemoteGetClock());
+        if (SMSout)
+          RemoteSendSMS(tempbuf);
       }
     }
   }
