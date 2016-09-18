@@ -29,11 +29,12 @@ use WaterMeter;
 #select * from rawdata where action = 'report' order by serverts desc;
 #alter table rawdata add actionnumber int not null AUTO_INCREMENT primary key;
 #select * from rawdata where  TIMESTAMPDIFF(SECOND,serverts,CURRENT_TIMESTAMP) < 10800 and action = 'report' order by serverts desc;
-select * from rawdata order by serverts desc limit 100;
+select * from rawdata order by serverts desc limit 1000;
+#select * from rawdata where action='leak' order by serverts desc;
 #select TIMESTAMPDIFF(SECOND,'2016-08-26 18:00:00',CURRENT_TIMESTAMP);
 #select * from rawdata where serverts > '2016-08-26 15:00:00' and action = 'report' order by serverts desc
 #alter table  EEPROM add TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 #select * from EEPROM order by TS desc;
 #alter table rawdata add ExternalMeter float;
-#insert into rawdata (ExternalMeter) values(759.0201);
+#insert into rawdata (action,ExternalMeter) values('calibrate',759.5057);
 #alter table rawdata change action action ENUM ('ping','powerup','leak','eepromreport','tapchange','report','reset','calibrate') default 'report';

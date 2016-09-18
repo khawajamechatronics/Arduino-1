@@ -1,0 +1,56 @@
+#######################################
+# Syntax Coloring Map For GSM
+####################################### 
+# Class
+#######################################
+
+AT	KEYWORD1
+callGSM KEYWORD1
+
+#######################################
+# Methods and Functions 
+#######################################	
+
+begin	KEYWORD2
+gIMEI	KEYWORD2
+# phonebook methods
+getPhoneNumber	KEYWORD2
+putPhoneNumber	KEYWORD2
+delPhoneNumber	KEYWORD2
+isRegistered	KEYWORD2
+isInitialized	KEYWORD2
+checkRegistration	KEYWORD2
+
+CallStatus	KEYWORD2
+CallStatusWithAuth	KEYWORD2
+PickUp	KEYWORD2
+HangUp	KEYWORD2
+Call	KEYWORD2
+
+#######################################
+# Constants
+#######################################
+ 
+ERROR	LITERAL1
+REG_NOT_REGISTERED	LITERAL1
+REG_REGISTERED	LITERAL1
+REG_NO_RESPONSE	LITERAL1
+REG_COMM_LINE_BUSY	LITERAL1
+#enum AT_Phonebook_e 
+INVALID_INDEX	LITERAL1
+MODULE_TIMEOUT	LITERAL1
+COMM_BUSY	LITERAL1
+NUMBER_NOT_PRESENT	LITERAL1
+NUMBER_FOUND	LITERAL1
+#enum call_ret_val_enum 
+CALL_NONE	LITERAL1
+CALL_INCOM_VOICE	LITERAL1
+CALL_ACTIVE_VOICE	LITERAL1
+CALL_INCOM_VOICE_AUTH	LITERAL1
+CALL_INCOM_VOICE_NOT_AUTH	LITERAL1
+CALL_INCOM_DATA_AUTH	LITERAL1
+CALL_INCOM_DATA_NOT_AUTH	LITERAL1
+CALL_ACTIVE_DATA	LITERAL1
+CALL_OTHERS	LITERAL1
+CALL_NO_RESPONSE	LITERAL1
+CALL_COMM_LINE_BUSY	LITERAL1

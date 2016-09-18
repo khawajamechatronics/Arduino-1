@@ -4,7 +4,7 @@
 // GPRS a6 PWR_KEY 1 LOWER, RST 7 LOWER
 #define TRANSISTOR_BASE  7  // RST
 #define START_BAUD 115200
-
+#define CHANNEL Serial2
 void hwreset()
 {
   Serial.println("\r\nReset");
@@ -17,7 +17,7 @@ void setup()
   //Serial connection.
   Serial.begin(115200);
   Serial.println("Start");
-  Serial1.begin(START_BAUD);
+  CHANNEL.begin(START_BAUD);
   pinMode(TRANSISTOR_BASE,OUTPUT);
   digitalWrite(TRANSISTOR_BASE,HIGH);
   hwreset();
@@ -26,15 +26,15 @@ void setup()
 int brate = 1;  // GPRS A^ only supports 115200 so no change
 void loop() { // run over and over
   char c;
-  if (Serial1.available()) {
-    Serial.write(Serial1.read());
+  if (CHANNEL.available()) {
+    Serial.write(CHANNEL.read());
   }
   if (Serial.available()) {
     c = Serial.read();
     if (c == ']')
       hwreset();
     else
-      Serial1.write(c);
+      CHANNEL.write(c);
   }
 }
 /*
