@@ -18,7 +18,7 @@
 #define lf    10 //Ascii character for line feed.
 #define AT_LIB_VERSION 100 // library version X.YY (e.g. 1.00)
 
-//#define DEBUG_ON
+#define DEBUG_ON
 
 
 #ifndef SWSERIAL
@@ -30,7 +30,7 @@
 //#define DEBUG_PRINT
 
 // if defined - debug print is enabled with possibility to print out
-// the data recived from gsm module
+// the data recived from atdevice module
 //#define DEBUG_GSMRX
 
 // if defined - debug LED is enabled, otherwise debug LED is disabled
@@ -142,23 +142,26 @@ enum call_ret_val_enum {
 };
 
 
-enum getsms_ret_val_enum {
-     GETSMS_NO_SMS   = 0,
-     GETSMS_UNREAD_SMS,
-     GETSMS_READ_SMS,
-     GETSMS_OTHER_SMS,
+	enum getsms_ret_val_enum
+	{
+		GETSMS_NO_SMS   = 0,
+		GETSMS_UNREAD_SMS,
+		GETSMS_READ_SMS,
+		GETSMS_OTHER_SMS,
 
-     GETSMS_NOT_AUTH_SMS,
-     GETSMS_AUTH_SMS,
+		GETSMS_NOT_AUTH_SMS,
+		GETSMS_AUTH_SMS,
 
-     GETSMS_LAST_ITEM
-};
+		GETSMS_LAST_ITEM
+	};
 
-	enum AT_Phonebook_e {INVALID_INDEX,
+	enum AT_Phonebook_e {
+		INVALID_INDEX,
 		MODULE_TIMEOUT,
 		COMM_BUSY,
 		NUMBER_NOT_PRESENT,
-		NUMBER_FOUND};
+		NUMBER_FOUND
+	};
 
 class AT {
 	public:
@@ -218,11 +221,11 @@ public:
      rx_state_enum WaitResp(uint16_t start_comm_tmout, uint16_t max_interchar_tmout);
      rx_state_enum WaitResp(uint16_t start_comm_tmout, uint16_t max_interchar_tmout,
                    char const *expected_resp_string);
-     char SendATCmdWaitResp(char const *AT_cmd_string,
+     at_resp_enum SendATCmdWaitResp(char const *AT_cmd_string,
                             uint16_t start_comm_tmout, uint16_t max_interchar_tmout,
                             char const *response_string,
                             byte no_of_attempts);
-     char SendATCmdWaitResp(const __FlashStringHelper *AT_cmd_string,
+     at_resp_enum SendATCmdWaitResp(const __FlashStringHelper *AT_cmd_string,
                             uint16_t start_comm_tmout, uint16_t max_interchar_tmout,
                             char const *response_string,
                             byte no_of_attempts);
@@ -237,8 +240,8 @@ public:
  //    byte CheckRegistration(void);
 
      // Phonebook's methods
-//     char getPhoneNumber(byte position, char *phone_number);
- //    char putPhoneNumber(byte position, char *phone_number);
+//     char GetPhoneNumber(byte position, char *phone_number);
+ //    char PutPhoneNumber(byte position, char *phone_number);
  //    char DelPhoneNumber(byte position);
  //    char ComparePhoneNumberComparePhoneNumber(byte position, char *phone_number);
 
@@ -259,4 +262,13 @@ public:
 #endif
 };
 
+/*
+*   Prototypes
+*/
+void DebugPrint(char const *message);
+void DebugPrint(const __FlashStringHelper *message);
+void DebugPrint(int message);
+void DebugPrintln(char const *message);
+void DebugPrintln(const __FlashStringHelper *message);
+void DebugPrintln(int message);
 #endif

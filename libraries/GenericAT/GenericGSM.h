@@ -23,10 +23,10 @@ public:
  //    int getCCI(char* cci);
      bool gIMEI(char* imei);
 	 // phonebook methods
-    AT_Phonebook_e getPhoneNumber(byte position, char *phone_number);
-    char putPhoneNumber(byte position, char *phone_number);
-    char delPhoneNumber(byte position);
-    char comparePhoneNumber(byte position, char *phone_number);
+    AT_Phonebook_e GetPhoneNumber(byte position, char *phone_number);
+    char PutPhoneNumber(byte position, char *phone_number);
+    char DelPhoneNumber(byte position);
+    char ComparePhoneNumber(byte position, char *phone_number);
     bool isRegistered(void);
     bool isInitialized(void);
 	registration_ret_val_enum checkRegistration(void);

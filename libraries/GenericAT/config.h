@@ -2,10 +2,10 @@
     global configuration
 */
 
-
 //#define SWSERIAL  // uncomment if using hardware serial
 #ifndef SWSERIAL
   // uncomment just 1 serial device
+//#define HWSERIAL Serial
 //#define HWSERIAL Serial1
 #define HWSERIAL Serial2
 //#define HWSERIAL Serial3
@@ -22,3 +22,5 @@
 // modify GenericStrings.h as necessary
 #define SIM900_MODULE 1
 //#define GSM_MODULE SIM900_MODULE
+
+//#define DIAL_NUMBER_FROM_STORAGE // uncomment out if dial from storage (ATD><n>) supported

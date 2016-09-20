@@ -8,7 +8,7 @@ with the Arduino's product.
 
 The library is modified to use the GSM Shield,
 developed by www.open-electronics.org
-(http://www.open-electronics.org/arduino-gsm-shield/)
+(http://www.open-electronics.org/arduino-atdevice-shield/)
 and based on SIM900 chip,
 with the same commands of Arduino Shield,
 based on QuectelM10 chip.
@@ -40,7 +40,6 @@ AT::AT()
 };
 #endif
 
-
 int AT::begin(long baud_rate)
 {
 	 // Set pin modes
@@ -50,12 +49,12 @@ int AT::begin(long baud_rate)
 #ifdef 	AT_DEVICE_RESET_PIN
 	pinMode(AT_DEVICE_RESET_PIN,OUTPUT);
 #endif
-
 #ifdef SWSERIAL
-     if (baud_rate>9600) {
-          Serial.println(F("Don't use baudrate > 9600 with Software Serial.\nAutomatically changed at 9600."));
-          baud_rate=9600;
-     }
+	if (baud_rate>9600)
+	{
+		DebugPrint(F("Don't use baudrate > 9600 with Software Serial.\nAutomatically changed at 9600."));
+		baud_rate=9600;
+	}
 #endif
      int response=-1;
      int cont=0;
@@ -73,7 +72,7 @@ int AT::begin(long baud_rate)
 			  //check power
                // there is no response => turn on the module
 #ifdef DEBUG_ON
-               Serial.println(F("DB:NO RESP"));
+               DebugPrintln(F("DB:NO RESP"));
 #endif
 #ifdef AT_DEVICE_ON_PIN
                // generate turn on pulse
@@ -82,7 +81,7 @@ int AT::begin(long baud_rate)
                WaitResp(1000, 1000);
           } else {
 #ifdef DEBUG_ON
-               Serial.println(F("DB:ELSE"));
+               DebugPrint(F("DB:ELSE"));
 #endif
                WaitResp(1000, 1000);
           }
@@ -90,7 +89,7 @@ int AT::begin(long baud_rate)
 
      if (AT_RESP_OK == SendATCmdWaitResp(str_at, 500, 100, str_ok, 5)) {
 #ifdef DEBUG_ON
-          Serial.println(F("DB:CORRECT BR"));
+          DebugPrintln(F("DB:CORRECT BR"));
 #endif
           turnedON=true;
           norep=false;
@@ -98,7 +97,7 @@ int AT::begin(long baud_rate)
 
      if (AT_RESP_ERR_DIF_RESP == SendATCmdWaitResp(str_at, 500, 100, str_ok, 5)&&!turnedON) {		//check OK
 #ifdef DEBUG_ON
-          Serial.println(F("DB:AUTO BAUD RATE"));
+          DebugPrintln(F("DB:AUTO BAUD RATE"));
 #endif
           for (int i=0; i<8; i++)
 		  {
@@ -115,7 +114,7 @@ int AT::begin(long baud_rate)
 
                if (AT_RESP_OK == SendATCmdWaitResp(str_at, 500, 100, str_ok, 5)) {
 #ifdef DEBUG_ON
-                    Serial.println(F("DB:FOUND PREV BR"));
+                    DebugPrintln(F("DB:FOUND PREV BR"));
 #endif
                     _cell.print("AT+IPR=");
                     _cell.print(baud_rate);
@@ -125,14 +124,14 @@ int AT::begin(long baud_rate)
                     delay(100);
                     if (AT_RESP_OK == SendATCmdWaitResp(str_at, 500, 100, str_ok, 5)) {
 #ifdef DEBUG_ON
-                         Serial.println(F("DB:OK BR"));
+                         DebugPrintln(F("DB:OK BR"));
 #endif
                     }
                     turnedON=true;
                     break;
                }
 #ifdef DEBUG_ON
-               Serial.println(F("DB:NO BR"));
+               DebugPrintln(F("DB:NO BR"));
 #endif
           }
           // communication line is not used yet = free
@@ -142,13 +141,13 @@ int AT::begin(long baud_rate)
      }
 
      if(norep==true&&!turnedON) {
-          Serial.print(F("Trying to force the baud-rate to "));
-		  Serial.println(DEFAULT_BAUD_RATE);
+          DebugPrint(F("Trying to force the baud-rate to "));
+		  DebugPrint(DEFAULT_BAUD_RATE);
           for (int i=7; i>0; i--)
 		  {
 			_cell.begin(baudrates[i]);
 			delay(1000);
-			Serial.println(baudrates[i]);
+			DebugPrint(baudrates[i]);
 			_cell.print(F("AT+IPR="));
 			_cell.print(DEFAULT_BAUD_RATE);
 			_cell.print("\r");
@@ -159,7 +158,7 @@ int AT::begin(long baud_rate)
 			delay(1000);
 			WaitResp(1000,1000);
 		  }
-          Serial.println(F("ERROR: SIM900 doesn't answer. Check power and serial pins in AT.cpp"));
+          DebugPrint(F("ERROR: SIM900 doesn't answer. Check power and serial pins in AT.cpp"));
 #ifdef AT_DEVICE_ON_PIN
 		  deviceon(AT_DEVICE_ON_PIN);
 #endif
@@ -230,13 +229,13 @@ return:
       AT_RESP_ERR_DIF_RESP = 0,   // response_string is different from the response
       AT_RESP_OK = 1,             // response_string was included in the response
 **********************************************************/
-char AT::SendATCmdWaitResp(char const *AT_cmd_string,
+at_resp_enum AT::SendATCmdWaitResp(char const *AT_cmd_string,
                             uint16_t start_comm_tmout, uint16_t max_interchar_tmout,
                             char const *response_string,
                             byte no_of_attempts)
 {
      byte status;
-     char ret_val = AT_RESP_ERR_NO_RESP;
+     at_resp_enum ret_val = AT_RESP_ERR_NO_RESP;
      byte i;
 
      for (i = 0; i < no_of_attempts; i++) {
@@ -274,7 +273,7 @@ return:
       AT_RESP_ERR_DIF_RESP = 0,   // response_string is different from the response
       AT_RESP_OK = 1,             // response_string was included in the response
 **********************************************************/
-char AT::SendATCmdWaitResp(const __FlashStringHelper *AT_cmd_string,
+at_resp_enum AT::SendATCmdWaitResp(const __FlashStringHelper *AT_cmd_string,
                             uint16_t start_comm_tmout, uint16_t max_interchar_tmout,
                             char const *response_string,
                             byte no_of_attempts)
@@ -336,9 +335,9 @@ rx_state_enum AT::IsRxFinished(void)
                #ifdef DEBUG_GSMRX
 
                		DebugPrint("\r\nDEBUG: reception timeout", 0);
-               		Serial.print((unsigned long)(millis() - prev_time));
+               		DebugPrint((unsigned long)(millis() - prev_time));
                		DebugPrint("\r\nDEBUG: start_reception_tmout\r\n", 0);
-               		Serial.print(start_reception_tmout);
+               		DebugPrint(start_reception_tmout);
 
 
                #endif
@@ -403,9 +402,9 @@ rx_state_enum AT::IsRxFinished(void)
           #ifdef DEBUG_GSMRX
 
           		DebugPrint("\r\nDEBUG: intercharacter", 0);
-          <			Serial.print((unsigned long)(millis() - prev_time));
+          <			DebugPrint((unsigned long)(millis() - prev_time));
           		DebugPrint("\r\nDEBUG: interchar_tmout\r\n", 0);
-          		Serial.print(interchar_tmout);
+          		DebugPrint(interchar_tmout);
 
 
           #endif
@@ -449,19 +448,19 @@ bool AT::IsStringReceived(char const *compare_string)
           	#ifdef DEBUG_GSMRX
           		DebugPrint("DEBUG: Compare the string: \r\n", 0);
           		for (int i=0; i<comm_buf_len; i++){
-          			Serial.print(byte(comm_buf[i]));
+          			DebugPrint(byte(comm_buf[i]));
           		}
 
           		DebugPrint("\r\nDEBUG: with the string: \r\n", 0);
-          		Serial.print(compare_string);
+          		DebugPrint(compare_string);
           		DebugPrint("\r\n", 0);
           	#endif
           */
 #ifdef DEBUG_ON
-          Serial.print("ATT: ");
-          Serial.println(compare_string);
-          Serial.print("RIC: ");
-          Serial.println((char *)comm_buf);
+          DebugPrint("ATT: ");
+          DebugPrint(compare_string);
+          DebugPrint("RIC: ");
+          DebugPrint((char *)comm_buf);
 #endif
           ch = strstr((char *)comm_buf, compare_string);
           if (ch != NULL)
@@ -483,9 +482,9 @@ bool AT::IsStringReceived(char const *compare_string)
 	 else
 	 {
 #ifdef DEBUG_ON
-          Serial.print(F("ATT: "));
-          Serial.println(compare_string);
-          Serial.print(F("RIC: NO STRING RCVD"));
+          DebugPrint(F("ATT: "));
+          DebugPrintln(compare_string);
+          DebugPrintln(F("RIC: NO STRING RCVD"));
 #endif
      }
      return (ret_val);

@@ -5,8 +5,6 @@
 #define _TCP_CONNECTION_TOUT_ 20
 #define _GSM_DATA_TOUT_ 10
 
-//#define RESETPIN 7
-
 GENERICGSM atdevice;
 GENERICGSM::GENERICGSM() {};
 GENERICGSM::~GENERICGSM() {};
@@ -110,13 +108,13 @@ int GENERICGSM::read(char* result, int resultlength)
      int i=0;
 
 #ifdef DEBUG_ON
-     Serial.print(F("Starting read..\nWaiting for Data.."));
+     DebugPrintln(F("Starting read..\nWaiting for Data.."));
 #endif
      // Wait until we start receiving data
      while(atdevice.available()<1) {
           delay(100);
 #ifdef DEBUG_ON
-          Serial.print(F("."));
+          DebugPrint(F("."));
 #endif
      }
 
@@ -124,7 +122,7 @@ int GENERICGSM::read(char* result, int resultlength)
           temp=_cell.read();
           if(temp>0) {
 #ifdef DEBUG_ON
-               Serial.print(temp);
+               DebugPrint(temp);
 #endif
                result[i]=temp;
                i++;
@@ -136,7 +134,7 @@ int GENERICGSM::read(char* result, int resultlength)
      result[resultlength-1]='\0';
 
 #ifdef DEBUG_ON
-     Serial.println(F("\nDone.."));
+     DebugPrintln(F("\nDone.."));
 #endif
      return i;
 }
@@ -173,7 +171,7 @@ int GENERICGSM::readCellData(int &mcc, int &mnc, long &lac, long &cellid)
 #if 0
 boolean GENERICGSM::readSMS(char* msg, int msglength, char* number, int nlength)
 {
-     Serial.println(F("This method is deprecated! Please use GetSMS in the SMS class."));
+     DebugPrintln(F("This method is deprecated! Please use GetSMS in the SMS class."));
      long index;
      char *p_char;
      char *p_char1;
@@ -245,7 +243,7 @@ boolean GENERICGSM::readSMS(char* msg, int msglength, char* number, int nlength)
 
           SimpleWrite(F("AT+CMGD="));
           SimpleWriteln(index);
-          // Serial.print("VAL= ");
+          // DebugPrint("VAL= ");
           // Serial.println(index);
           atdevice.WaitResp(5000, 50, str_ok);
           return true;
@@ -411,7 +409,7 @@ void GENERICGSM::SimpleRead()
      if(_cell.available()>0) {
           datain=_cell.read();
           if(datain>0) {
-               Serial.print(datain);
+               DebugPrint(datain);
           }
      }
 }
@@ -466,7 +464,7 @@ void GENERICGSM::WhileSimpleRead()
      while(_cell.available()>0) {
           datain=_cell.read();
           if(datain>0) {
-               Serial.print(datain);
+               DebugPrint(datain);
           }
      }
 }
@@ -787,7 +785,7 @@ an example of usage:
 **********************************************************/
 
 
-AT_Phonebook_e GENERICGSM::getPhoneNumber(byte position, char *phone_number)
+AT_Phonebook_e GENERICGSM::GetPhoneNumber(byte position, char *phone_number)
 {
      AT_Phonebook_e ret_val = COMM_BUSY;
 
@@ -867,7 +865,7 @@ return:
         0 - phone number was not written
         1 - phone number was written
 **********************************************************/
-char GENERICGSM::putPhoneNumber(byte position, char *phone_number)
+char GENERICGSM::PutPhoneNumber(byte position, char *phone_number)
 {
      char ret_val = -1;
 
@@ -925,7 +923,7 @@ return:
         0 - phone number was not deleted
         1 - phone number was deleted
 **********************************************************/
-char GENERICGSM::delPhoneNumber(byte position)
+char GENERICGSM::DelPhoneNumber(byte position)
 {
      char ret_val = -1;
 
@@ -995,7 +993,7 @@ an example of usage:
           #endif
         }
 **********************************************************/
-char GENERICGSM::comparePhoneNumber(byte position, char *phone_number)
+char GENERICGSM::ComparePhoneNumber(byte position, char *phone_number)
 {
      char ret_val = -1;
      char sim_phone_number[20];
@@ -1003,10 +1001,10 @@ char GENERICGSM::comparePhoneNumber(byte position, char *phone_number)
 
      ret_val = 0; // numbers are not the same so far
      if (position == 0) return (-3);
-     if (1 == getPhoneNumber(position, sim_phone_number)) {
-          //Serial.print("CHIAMANTE ");
+     if (1 == GetPhoneNumber(position, sim_phone_number)) {
+          //DebugPrint("CHIAMANTE ");
           //Serial.println(phone_number);
-          //Serial.print("SALVATO ");
+          //DebugPrint("SALVATO ");
           //Serial.println(sim_phone_number);
 
           // there is a valid number at the spec. SIM position

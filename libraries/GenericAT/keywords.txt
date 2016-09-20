@@ -14,9 +14,9 @@ callGSM KEYWORD1
 begin	KEYWORD2
 gIMEI	KEYWORD2
 # phonebook methods
-getPhoneNumber	KEYWORD2
-putPhoneNumber	KEYWORD2
-delPhoneNumber	KEYWORD2
+GetPhoneNumber	KEYWORD2
+PutPhoneNumber	KEYWORD2
+DelPhoneNumber	KEYWORD2
 isRegistered	KEYWORD2
 isInitialized	KEYWORD2
 checkRegistration	KEYWORD2

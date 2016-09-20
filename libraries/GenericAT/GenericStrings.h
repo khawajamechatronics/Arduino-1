@@ -14,6 +14,11 @@
 #define S_INCOM_VOICE "+CPAS:3"
 #define S_ACTIVE_VOICE "+CPAS:4"
 
+#define S_SMS_TEXT_MODE F("AT+CMGF=1")
+#define S_SMS_PDU_MODE F("AT+CMGF=0")
+#define S_SMS_SEND F("AT+CMGS=\"")
+#define S_SMS_SEND_RESPONSE "+CMGS"
+
 #define S_PICKUP F("ATA")
 #define S_HANGUP F("ATH")
 #define S_DIAL F("ATD")
