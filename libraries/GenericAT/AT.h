@@ -198,7 +198,6 @@ protected:
 	byte module_status;
 public:
 #ifdef SWSERIAL
-#error blah
      WTF _tf;
 #endif
      inline void setStatus(AT_st_e status) {
@@ -263,7 +262,7 @@ public:
 };
 
 /*
-*   Prototypes
+*    Prototypes
 */
 void DebugPrint(char const *message);
 void DebugPrint(const __FlashStringHelper *message);
