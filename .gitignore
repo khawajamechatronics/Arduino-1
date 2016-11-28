@@ -242,3 +242,7 @@ ipch
 *.mp4
 *.mkv
 *.pdf
+giladcar/giladcar.ino
+*.txt
+libraries/GSMSHIELD/new 1.txt
+libraries/GSMSHIELD/new 1.txt
