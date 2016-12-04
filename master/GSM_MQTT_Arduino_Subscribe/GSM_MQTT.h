@@ -17,9 +17,6 @@
 
 #include <avr/pgmspace.h>
 
-#define GSM_SERIAL Serial3
-#define SERIAL_EVENT serialEvent3
-
 #define UART_BUFFER_LENGTH 300    //Maximum length allowed for UART data
 #define TOPIC_BUFFER_LENGTH 50    //Maximum length allowed Topic
 #define MESSAGE_BUFFER_LENGTH 250  //Maximum length allowed data
@@ -106,13 +103,12 @@ class GSM_MQTT
     void printMessageType(uint8_t Message);
     void printConnectAck(uint8_t Ack);
     char sendATreply(char *command, char *replystr, unsigned long waitms);
-    void Reset(void);
 
   private:
     volatile unsigned int _LastMessaseID = 0;
     volatile char _ProtocolVersion = 3;
     volatile unsigned long _PingPrevMillis = 0;
-    volatile int _tcpStatus = 0;
+    volatile char _tcpStatus = 0;
     volatile char _tcpStatusPrev = 0;
     volatile unsigned long _KeepAliveTimeOut;
 

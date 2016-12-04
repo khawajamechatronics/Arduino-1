@@ -42,4 +42,6 @@ void loop() { // run over and over
  * AT+GSN
  * ATD0545919886
  * AT+CREG?
+ * AT+CGATT=1
+ * AT+CGATT=0
  */

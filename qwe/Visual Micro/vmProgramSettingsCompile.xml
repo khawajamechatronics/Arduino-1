@@ -1,8 +1,0 @@
-<VisualMicro>
-  <Program Name="qwe" Ext=".pde" Location="C:\Users\Saba\Documents\Arduino\qwe" IncludeDebugInformation="0">
-    <Compile CompilerErrors="0" StopOnError="False" OptimiseLibs="True" OptimiseCore="True" BuildPath="C:\Users\Saba\AppData\Local\VMicro\Arduino\Builds\qwe\atmega328" IncludesDebug="0" SketchName="qwe" IsCompiled="1" />
-    <Platform Name="Arduino">
-      <Board Name="atmega328" Description="Arduino Duemilanove w/ ATmega328" CoreFolder="C:\arduino-1.0.2\hardware\arduino\cores\arduino" VariantFullPath="C:\arduino-1.0.2\hardware\arduino\variants\standard" />
-    </Platform>
-  </Program>
-</VisualMicro>

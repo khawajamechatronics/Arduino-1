@@ -2,13 +2,6 @@
   MQTT.h - Library for GSM MQTT Client.
   Created by Nithin K. Kurian, Dhanish Vijayan, Elementz Engineers Guild Pvt. Ltd, July 2, 2016.
   Released into the public domain.
-
-  Add Reset method - customize for each modem model
-  Make MQTT_PORT integer, not String as some modems insist in integer
-  Make APN a customizable variable
-  Add USERID and PASSWORD as some modems insist in it, even if empty
-  Replace Serial by GSM_SERIAL, define GSM_SERIAL as any hardware serial
-  Replace SerialEvent by SERIAL_EVENT, define SERIAL_EVENT as serialEvent[n] as appropriate
 */
 
 #include "GSM_MQTT.h"
@@ -19,17 +12,14 @@ extern uint8_t GSM_Response;
 
 extern SoftwareSerial mySerial;
 extern String MQTT_HOST;
-extern int MQTT_PORT;
-extern String APN;
-extern String USERID;
-extern String PASSWORD;
+extern String MQTT_PORT;
 
 extern GSM_MQTT MQTT;
 uint8_t GSM_Response = 0;
 unsigned long previousMillis = 0;
 //char inputString[UART_BUFFER_LENGTH];         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
-void SERIAL_EVENT();
+void serialEvent();
 GSM_MQTT::GSM_MQTT(unsigned long KeepAlive)
 {
   _KeepAliveTimeOut = KeepAlive;
@@ -37,18 +27,9 @@ GSM_MQTT::GSM_MQTT(unsigned long KeepAlive)
 
 void GSM_MQTT::begin(void)
 {
-  bool init = false;
   mySerial.begin(9600);
-  GSM_SERIAL.begin(9600);
-  mySerial.println("Starting...");
-//  Serial.write("AT\r\n");
-  while (!init)
-  {
-    if (sendATreply("AT\r","OK",1000) == 1)
-      init = true;
-    else
-      GSM_MQTT::Reset();
-  }
+  Serial.begin(9600);
+  Serial.write("AT\r\n");
   delay(1000);
   _tcpInit();
 }
@@ -58,14 +39,14 @@ char GSM_MQTT::_sendAT(char *command, unsigned long waitms)
   unsigned long PrevMillis = millis();
   strcpy(reply, "none");
   GSM_Response = 0;
-  GSM_SERIAL.write(command);
+  Serial.write(command);
   unsigned long currentMillis = millis();
   //  mySerial.println(PrevMillis);
   //  mySerial.println(currentMillis);
   while ( (GSM_Response == 0) && ((currentMillis - PrevMillis) < waitms) )
   {
     //    delay(1);
-    SERIAL_EVENT();
+    serialEvent();
     currentMillis = millis();
   }
   return GSM_Response;
@@ -75,7 +56,7 @@ char GSM_MQTT::sendATreply(char *command, char *replystr, unsigned long waitms)
   strcpy(reply, replystr);
   unsigned long PrevMillis = millis();
   GSM_ReplyFlag = 0;
-  GSM_SERIAL.write(command);
+  Serial.write(command);
   unsigned long currentMillis = millis();
 
   //  mySerial.println(PrevMillis);
@@ -83,7 +64,7 @@ char GSM_MQTT::sendATreply(char *command, char *replystr, unsigned long waitms)
   while ( (GSM_ReplyFlag == 0) && ((currentMillis - PrevMillis) < waitms) )
   {
     //    delay(1);
-    SERIAL_EVENT();
+    serialEvent();
     currentMillis = millis();
   }
   return GSM_ReplyFlag;
@@ -95,7 +76,7 @@ void GSM_MQTT::_tcpInit(void)
     case 0:
       {
         delay(1000);
-        GSM_SERIAL.print("+++");
+        Serial.print("+++");
         delay(500);
         if (_sendAT("AT\r\n", 5000) == 1)
         {
@@ -165,14 +146,7 @@ void GSM_MQTT::_tcpInit(void)
         {
           case 2:
             {
-//              _sendAT("AT+CSTT=\"AIRTELGPRS.COM\"\r\n", 5000);
-              GSM_SERIAL.print("AT+CSTT=\"");
-              GSM_SERIAL.print(APN);
-              GSM_SERIAL.print("\",\"");
-              GSM_SERIAL.print(USERID);
-              GSM_SERIAL.print("\",\"");
-              GSM_SERIAL.print(PASSWORD);
-              _sendAT("\"\r\n", 5000);
+              _sendAT("AT+CSTT=\"AIRTELGPRS.COM\"\r\n", 5000);
               break;
             }
           case 3:
@@ -187,18 +161,18 @@ void GSM_MQTT::_tcpInit(void)
             }
           case 5:
             {
-              GSM_SERIAL.print("AT+CIPSTART=\"TCP\",\"");
-              GSM_SERIAL.print(MQTT_HOST);
-              GSM_SERIAL.print("\",");
-              GSM_SERIAL.print(MQTT_PORT);
-              if (_sendAT("\r\n", 5000) == 1)
+              Serial.print("AT+CIPSTART=\"TCP\",\"");
+              Serial.print(MQTT_HOST);
+              Serial.print("\",\"");
+              Serial.print(MQTT_PORT);
+              if (_sendAT("\"\r\n", 5000) == 1)
               {
                 unsigned long PrevMillis = millis();
                 unsigned long currentMillis = millis();
                 while ( (GSM_Response != 4) && ((currentMillis - PrevMillis) < 20000) )
                 {
                   //    delay(1);
-                  SERIAL_EVENT();
+                  serialEvent();
                   currentMillis = millis();
                 }
               }
@@ -211,7 +185,7 @@ void GSM_MQTT::_tcpInit(void)
               while ( (GSM_Response != 4) && ((currentMillis - PrevMillis) < 20000) )
               {
                 //    delay(1);
-                SERIAL_EVENT();
+                serialEvent();
                 currentMillis = millis();
               }
               break;
@@ -239,7 +213,7 @@ void GSM_MQTT::_ping(void)
     {
       // save the last time you blinked the LED
       _PingPrevMillis = currentMillis;
-      GSM_SERIAL.print(char(PINGREQ * 16));
+      Serial.print(char(PINGREQ * 16));
       _sendLength(0);
     }
   }
@@ -247,9 +221,9 @@ void GSM_MQTT::_ping(void)
 void GSM_MQTT::_sendUTFString(char *string)
 {
   int localLength = strlen(string);
-  GSM_SERIAL.print(char(localLength / 256));
-  GSM_SERIAL.print(char(localLength % 256));
-  GSM_SERIAL.print(string);
+  Serial.print(char(localLength / 256));
+  Serial.print(char(localLength % 256));
+  Serial.print(string);
 }
 void GSM_MQTT::_sendLength(int len)
 {
@@ -258,20 +232,20 @@ void GSM_MQTT::_sendLength(int len)
   {
     if ((len / 128) > 0)
     {
-      GSM_SERIAL.print(char(len % 128 + 128));
+      Serial.print(char(len % 128 + 128));
       len /= 128;
     }
     else
     {
       length_flag = true;
-      GSM_SERIAL.print(char(len));
+      Serial.print(char(len));
     }
   }
 }
 void GSM_MQTT::connect(char *ClientIdentifier, char UserNameFlag, char PasswordFlag, char *UserName, char *Password, char CleanSession, char WillFlag, char WillQoS, char WillRetain, char *WillTopic, char *WillMessage)
 {
   ConnectionAcknowledgement = NO_ACKNOWLEDGEMENT ;
-  GSM_SERIAL.print(char(CONNECT * 16 ));
+  Serial.print(char(CONNECT * 16 ));
   char ProtocolName[7] = "MQIsdp";
   int localLength = (2 + strlen(ProtocolName)) + 1 + 3 + (2 + strlen(ClientIdentifier));
   if (WillFlag != 0)
@@ -289,10 +263,10 @@ void GSM_MQTT::connect(char *ClientIdentifier, char UserNameFlag, char PasswordF
   }
   _sendLength(localLength);
   _sendUTFString(ProtocolName);
-  GSM_SERIAL.print(char(_ProtocolVersion));
-  GSM_SERIAL.print(char(UserNameFlag * User_Name_Flag_Mask + PasswordFlag * Password_Flag_Mask + WillRetain * Will_Retain_Mask + WillQoS * Will_QoS_Scale + WillFlag * Will_Flag_Mask + CleanSession * Clean_Session_Mask));
-  GSM_SERIAL.print(char(_KeepAliveTimeOut / 256));
-  GSM_SERIAL.print(char(_KeepAliveTimeOut % 256));
+  Serial.print(char(_ProtocolVersion));
+  Serial.print(char(UserNameFlag * User_Name_Flag_Mask + PasswordFlag * Password_Flag_Mask + WillRetain * Will_Retain_Mask + WillQoS * Will_QoS_Scale + WillFlag * Will_Flag_Mask + CleanSession * Clean_Session_Mask));
+  Serial.print(char(_KeepAliveTimeOut / 256));
+  Serial.print(char(_KeepAliveTimeOut % 256));
   _sendUTFString(ClientIdentifier);
   if (WillFlag != 0)
   {
@@ -310,7 +284,7 @@ void GSM_MQTT::connect(char *ClientIdentifier, char UserNameFlag, char PasswordF
 }
 void GSM_MQTT::publish(char DUP, char Qos, char RETAIN, unsigned int MessageID, char *Topic, char *Message)
 {
-  GSM_SERIAL.print(char(PUBLISH * 16 + DUP * DUP_Mask + Qos * QoS_Scale + RETAIN));
+  Serial.print(char(PUBLISH * 16 + DUP * DUP_Mask + Qos * QoS_Scale + RETAIN));
   int localLength = (2 + strlen(Topic));
   if (Qos > 0)
   {
@@ -321,65 +295,65 @@ void GSM_MQTT::publish(char DUP, char Qos, char RETAIN, unsigned int MessageID, 
   _sendUTFString(Topic);
   if (Qos > 0)
   {
-    GSM_SERIAL.print(char(MessageID / 256));
-    GSM_SERIAL.print(char(MessageID % 256));
+    Serial.print(char(MessageID / 256));
+    Serial.print(char(MessageID % 256));
   }
-  GSM_SERIAL.print(Message);
+  Serial.print(Message);
 }
 void GSM_MQTT::publishACK(unsigned int MessageID)
 {
-  GSM_SERIAL.print(char(PUBACK * 16));
+  Serial.print(char(PUBACK * 16));
   _sendLength(2);
-  GSM_SERIAL.print(char(MessageID / 256));
-  GSM_SERIAL.print(char(MessageID % 256));
+  Serial.print(char(MessageID / 256));
+  Serial.print(char(MessageID % 256));
 }
 void GSM_MQTT::publishREC(unsigned int MessageID)
 {
-  GSM_SERIAL.print(char(PUBREC * 16));
+  Serial.print(char(PUBREC * 16));
   _sendLength(2);
-  GSM_SERIAL.print(char(MessageID / 256));
-  GSM_SERIAL.print(char(MessageID % 256));
+  Serial.print(char(MessageID / 256));
+  Serial.print(char(MessageID % 256));
 }
 void GSM_MQTT::publishREL(char DUP, unsigned int MessageID)
 {
-  GSM_SERIAL.print(char(PUBREL * 16 + DUP * DUP_Mask + 1 * QoS_Scale));
+  Serial.print(char(PUBREL * 16 + DUP * DUP_Mask + 1 * QoS_Scale));
   _sendLength(2);
-  GSM_SERIAL.print(char(MessageID / 256));
-  GSM_SERIAL.print(char(MessageID % 256));
+  Serial.print(char(MessageID / 256));
+  Serial.print(char(MessageID % 256));
 }
 
 void GSM_MQTT::publishCOMP(unsigned int MessageID)
 {
-  GSM_SERIAL.print(char(PUBCOMP * 16));
+  Serial.print(char(PUBCOMP * 16));
   _sendLength(2);
-  GSM_SERIAL.print(char(MessageID / 256));
-  GSM_SERIAL.print(char(MessageID % 256));
+  Serial.print(char(MessageID / 256));
+  Serial.print(char(MessageID % 256));
 }
 void GSM_MQTT::subscribe(char DUP, unsigned int MessageID, char *SubTopic, char SubQoS)
 {
-  GSM_SERIAL.print(char(SUBSCRIBE * 16 + DUP * DUP_Mask + 1 * QoS_Scale));
+  Serial.print(char(SUBSCRIBE * 16 + DUP * DUP_Mask + 1 * QoS_Scale));
   int localLength = 2 + (2 + strlen(SubTopic)) + 1;
   _sendLength(localLength);
-  GSM_SERIAL.print(char(MessageID / 256));
-  GSM_SERIAL.print(char(MessageID % 256));
+  Serial.print(char(MessageID / 256));
+  Serial.print(char(MessageID % 256));
   _sendUTFString(SubTopic);
-  GSM_SERIAL.print(SubQoS);
+  Serial.print(SubQoS);
 
 }
 void GSM_MQTT::unsubscribe(char DUP, unsigned int MessageID, char *SubTopic)
 {
-  GSM_SERIAL.print(char(UNSUBSCRIBE * 16 + DUP * DUP_Mask + 1 * QoS_Scale));
+  Serial.print(char(UNSUBSCRIBE * 16 + DUP * DUP_Mask + 1 * QoS_Scale));
   int localLength = (2 + strlen(SubTopic)) + 2;
   _sendLength(localLength);
 
-  GSM_SERIAL.print(char(MessageID / 256));
-  GSM_SERIAL.print(char(MessageID % 256));
+  Serial.print(char(MessageID / 256));
+  Serial.print(char(MessageID % 256));
 
   _sendUTFString(SubTopic);
 }
 void GSM_MQTT::disconnect(void)
 {
-  GSM_SERIAL.print(char(DISCONNECT * 16));
+  Serial.print(char(DISCONNECT * 16));
   _sendLength(0);
   pingFlag = false;
 }
@@ -664,12 +638,12 @@ bool GSM_MQTT::available(void)
 {
   return MQTT_Flag;
 }
-void SERIAL_EVENT()
+void serialEvent()
 {
 
-  while (GSM_SERIAL.available())
+  while (Serial.available())
   {
-    char inChar = (char)GSM_SERIAL.read();
+    char inChar = (char)Serial.read();
     if (MQTT.TCP_Flag == false)
     {
       if (MQTT.index < 200)
@@ -765,9 +739,9 @@ void SERIAL_EVENT()
         char Cchar = inChar;
         while ( (NextLengthByte == true) && (MQTT.TCP_Flag == true))
         {
-          if (GSM_SERIAL.available())
+          if (Serial.available())
           {
-            inChar = (char)GSM_SERIAL.read();
+            inChar = (char)Serial.read();
             mySerial.println(inChar, DEC);
             if ((((Cchar & 0xFF) == 'C') && ((inChar & 0xFF) == 'L') && (MQTT.length == 0)) || (((Cchar & 0xFF) == '+') && ((inChar & 0xFF) == 'P') && (MQTT.length == 0)))
             {
@@ -803,9 +777,9 @@ void SERIAL_EVENT()
           MQTT.printMessageType(ReceivedMessageType);
           MQTT.index = 0L;
           uint32_t a = 0;
-          while ((MQTT.length-- > 0) && (GSM_SERIAL.available()))
+          while ((MQTT.length-- > 0) && (Serial.available()))
           {
-            MQTT.inputString[uint32_t(MQTT.index++)] = (char)GSM_SERIAL.read();
+            MQTT.inputString[uint32_t(MQTT.index++)] = (char)Serial.read();
 
             delay(1);
 

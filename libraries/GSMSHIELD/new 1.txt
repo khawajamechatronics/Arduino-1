@@ -1,17 +1,19 @@
-http://go.microsoft.com/fwlink/?LinkId=392235
-- Export an Azure table to a local folder
- AzCopy /Source:https://henrydil.table.core.windows.net/customer/ /Dest:c:\temp /SourceKey:dv+GiaJuCaTz+IFB1G5CpoXxOAQsFgosV2X77T2K2MMkZkDvmYKWJzG+rQjGIT8W8cAteUuGXvr/P/Cn8qIugw==
- 
- DefaultEndpointsProtocol=https;
- AccountName=henrydil;
- AccountKey=dv+GiaJuCaTz+IFB1G5CpoXxOAQsFgosV2X77T2K2MMkZkDvmYKWJzG+rQjGIT8W8cAteUuGXvr/P/Cn8qIugw==;
- BlobEndpoint=https://henrydil.blob.core.windows.net/;
- TableEndpoint=https://henrydil.table.core.windows.net/;
- QueueEndpoint=https://henrydil.queue.core.windows.net/;
- FileEndpoint=https://henrydil.file.core.windows.net/
- 
- event hubs namespace zickel1-ns  event hub zickel1
- SendRule Endpoint=sb://zickel1-ns.servicebus.windows.net/;SharedAccessKeyName=SendRule;SharedAccessKey=uHgF2y5b01rEQ8DLW/k73z28Le+8sRk17WXPPwfsYNw=
- ReceiveRule Endpoint=sb://zickel1-ns.servicebus.windows.net/;SharedAccessKeyName=ReceiveRule;SharedAccessKey=DCB6SUENRO8hGnpYnSYA9WmlWQstdnDUOnsbgT2EXRI=
- 
- 
+AT+CGATT=1
+AT+CGDCONT=1,"IP","uinternet"
+AT+CGACT=1,1
+AT+CIPCLOSE
+AT+CIPSTART="TCP","david-henry.dyndns.tv",80
+AT+CIPSEND
+GET /WaterControl/RawData.php?action=tapchange&tap=tapopen HTTP/1.0
+Host: david-henry.dyndns.tv
+User-Agent: Arduino
+
+
+POST /WaterControl/RawData.php HTTP/1.0
+Host: david-henry.dyndns.tv
+User-Agent: Arduino
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 29
+
+action=tapchange&tap=tapopen
+

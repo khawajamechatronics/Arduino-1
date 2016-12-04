@@ -11,7 +11,10 @@
  * TBD Move configuration stuff to EERPOM
  * 
  */
-
+/*
+ * Version 2
+ * Add watchdog - note not all boards physically support this optin so check
+ */
 #include <stddef.h>
 #include "Configuration.h"
 #include <SPI.h>
