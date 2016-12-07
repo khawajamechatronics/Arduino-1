@@ -78,7 +78,7 @@ class GSM_MQTT
     char Message[MESSAGE_BUFFER_LENGTH];
     volatile int MessageLength = 0;
     volatile int MessageFlag = false;
-    volatile char modemStatus = 0;
+    volatile int modemStatus = 0;
     volatile uint32_t index = 0;
     volatile uint32_t length = 0, lengthLocal = 0;
   //  volatile bool waitingForAck = false;
@@ -103,8 +103,8 @@ class GSM_MQTT
     void publishREL(char DUP, unsigned int MessageID);
     void publishCOMP(unsigned int MessageID);
 
-    void printMessageType(uint8_t Message);
-    void printConnectAck(uint8_t Ack);
+//    void printMessageType(uint8_t Message);
+    void printConstString(const char * const list[],int index);
     char sendATreply(char *command, char *replystr, unsigned long waitms);
     void Reset(void);
   private:

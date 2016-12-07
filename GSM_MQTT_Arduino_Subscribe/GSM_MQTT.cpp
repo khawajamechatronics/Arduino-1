@@ -11,6 +11,11 @@
  *   Set HW serial via macro GSM_SERIAL
  *   Replace all serialEvent by SERIALEVENT
  *   Set hw serial event via macro SERIALEVENT
+ *   
+ *   change MQTT_PORT to int
+ *   Add USERID, PASSWORD
+ *   Replace printMessageType and printConnectAck by printConstString
+ *   Bugfix replace 200 by UART_BUFFER_LENGTH in SERIALEVENT
  */
 #include "GSM_MQTT.h"
 #include "Arduino.h"
@@ -20,8 +25,10 @@
 
 extern SoftwareSerial DB_SERIAL;
 extern String MQTT_HOST;
-extern String MQTT_PORT;
+extern int MQTT_PORT;
 extern String APN;
+extern String USERID;
+extern String PASSWORD;
 
 extern GSM_MQTT MQTT;
 int GSM_Response = 0;
@@ -87,6 +94,8 @@ char GSM_MQTT::sendATreply(char *command, char *replystr, unsigned long waitms)
 }
 void GSM_MQTT::_tcpInit(void)
 {
+  DB_SERIAL.print("MS ");
+  DB_SERIAL.println(modemStatus);
   switch (modemStatus)
   {
     case 0:
@@ -166,6 +175,10 @@ void GSM_MQTT::_tcpInit(void)
 //              _sendAT("AT+CSTT=\"AIRTELGPRS.COM\"\r\n", 5000);
                 GSM_SERIAL.print("AT+CSTT=\"");
                 GSM_SERIAL.print(APN);
+                GSM_SERIAL.print("\",\"");
+                GSM_SERIAL.print(USERID);
+                GSM_SERIAL.print("\",\"");
+                GSM_SERIAL.print(PASSWORD);
                 _sendAT("\"\r\n",5000);
               break;
             }
@@ -183,9 +196,9 @@ void GSM_MQTT::_tcpInit(void)
             {
               GSM_SERIAL.print("AT+CIPSTART=\"TCP\",\"");
               GSM_SERIAL.print(MQTT_HOST);
-              GSM_SERIAL.print("\",\"");
+              GSM_SERIAL.print("\",");
               GSM_SERIAL.print(MQTT_PORT);
-              if (_sendAT("\"\r\n", 5000) == 1)
+              if (_sendAT("\r\n", 5000) == 1)
               {
                 unsigned long PrevMillis = millis();
                 unsigned long currentMillis = millis();
@@ -384,9 +397,26 @@ void GSM_MQTT::disconnect(void)
   _sendLength(0);
   pingFlag = false;
 }
+
+
+//Connect Ack
+#define NUMBER_OF_CONNECT_ELEMENTS 6
+const char ConnectAck0[] PROGMEM  = {"Connection Accepted\r\n"};
+const char ConnectAck1[] PROGMEM  = {"Connection Refused: unacceptable protocol version\r\n"};
+const char ConnectAck2[] PROGMEM  = {"Connection Refused: identifier rejected\r\n"};
+const char ConnectAck3[] PROGMEM  = {"Connection Refused: server unavailable\r\n"};
+const char ConnectAck4[] PROGMEM  = {"Connection Refused: bad user name or password\r\n"};
+const char ConnectAck5[] PROGMEM  = {"Connection Refused: not authorized\r\n"};
+const char * const ConnectMessages[NUMBER_OF_CONNECT_ELEMENTS] PROGMEM = {
+  ConnectAck0,ConnectAck1,ConnectAck2,ConnectAck3,ConnectAck4,ConnectAck5
+};
+
+// General Messages
 //Messages
+#define NUMBER_OF_GENERAL_MESSAGES 15  // CONNECT is 1
+const char BlankMessage[] PROGMEM  = {""};
 const char CONNECTMessage[] PROGMEM  = {"Client request to connect to Server\r\n"};
-const char CONNACKMessage[] PROGMEM  = {"Connect Acknowledgment\r\n"};
+const char CONNACKMessage[] PROGMEM  = {"Connection Acknowledgment\r\n"};
 const char PUBLISHMessage[] PROGMEM  = {"Publish message\r\n"};
 const char PUBACKMessage[] PROGMEM  = {"Publish Acknowledgment\r\n"};
 const char PUBRECMessage[] PROGMEM  = {"Publish Received (assured delivery part 1)\r\n"};
@@ -399,247 +429,23 @@ const char UNSUBACKMessage[] PROGMEM  = {"Unsubscribe Acknowledgment\r\n"};
 const char PINGREQMessage[] PROGMEM  = {"PING Request\r\n"};
 const char PINGRESPMessage[] PROGMEM  = {"PING Response\r\n"};
 const char DISCONNECTMessage[] PROGMEM  = {"Client is Disconnecting\r\n"};
+const char * const GeneralMessages[NUMBER_OF_GENERAL_MESSAGES] PROGMEM = {
+  BlankMessage,
+  CONNECTMessage,CONNACKMessage,PUBLISHMessage,PUBACKMessage,PUBRECMessage,PUBRELMessage,
+  PUBCOMPMessage,SUBSCRIBEMessage,SUBACKMessage,UNSUBSCRIBEMessage,UNSUBACKMessage,PINGREQMessage,
+  PINGRESPMessage,DISCONNECTMessage
+};
 
-void GSM_MQTT::printMessageType(uint8_t Message)
+void GSM_MQTT::printConstString(const char * const list[],int index)
 {
-  switch (Message)
-  {
-    case CONNECT:
-      {
-        int k, len = strlen_P(CONNECTMessage);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(CONNECTMessage + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case CONNACK:
-      {
-        int k, len = strlen_P(CONNACKMessage);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(CONNACKMessage + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case PUBLISH:
-      {
-        int k, len = strlen_P(PUBLISHMessage);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(PUBLISHMessage + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case PUBACK:
-      {
-        int k, len = strlen_P(PUBACKMessage);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(PUBACKMessage + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case  PUBREC:
-      {
-        int k, len = strlen_P(PUBRECMessage);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(PUBRECMessage + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case PUBREL:
-      {
-        int k, len = strlen_P(PUBRELMessage);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(PUBRELMessage + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case PUBCOMP:
-      {
-        int k, len = strlen_P(PUBCOMPMessage );
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(PUBCOMPMessage  + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case SUBSCRIBE:
-      {
-        int k, len = strlen_P(SUBSCRIBEMessage );
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(SUBSCRIBEMessage  + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case SUBACK:
-      {
-        int k, len = strlen_P(SUBACKMessage );
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(SUBACKMessage  + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case UNSUBSCRIBE:
-      {
-        int k, len = strlen_P(UNSUBSCRIBEMessage );
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(UNSUBSCRIBEMessage  + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case UNSUBACK:
-      {
-        int k, len = strlen_P(UNSUBACKMessage );
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(UNSUBACKMessage  + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case PINGREQ:
-      {
-        int k, len = strlen_P(PINGREQMessage);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(PINGREQMessage + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case PINGRESP:
-      {
-        int k, len = strlen_P(PINGRESPMessage);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(PINGRESPMessage + k);
-          DB_SERIAL.print(myChar);
-        }
-       // MQTT.waitingForAck = false;
-        break;
-      }
-    case DISCONNECT:
-      {
-        int k, len = strlen_P(DISCONNECTMessage);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(DISCONNECTMessage + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-  }
-}
-
-//Connect Ack
-const char ConnectAck0[] PROGMEM  = {"Connection Accepted\r\n"};
-const char ConnectAck1[] PROGMEM  = {"Connection Refused: unacceptable protocol version\r\n"};
-const char ConnectAck2[] PROGMEM  = {"Connection Refused: identifier rejected\r\n"};
-const char ConnectAck3[] PROGMEM  = {"Connection Refused: server unavailable\r\n"};
-const char ConnectAck4[] PROGMEM  = {"Connection Refused: bad user name or password\r\n"};
-const char ConnectAck5[] PROGMEM  = {"Connection Refused: not authorized\r\n"};
-void GSM_MQTT::printConnectAck(uint8_t Ack)
-{
-  switch (Ack)
-  {
-    case 0:
-      {
-        int k, len = strlen_P(ConnectAck0);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(ConnectAck0 + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case 1:
-      {
-        int k, len = strlen_P(ConnectAck1);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(ConnectAck1 + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case 2:
-      {
-        int k, len = strlen_P(ConnectAck2);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(ConnectAck2 + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case 3:
-      {
-        int k, len = strlen_P(ConnectAck3);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(ConnectAck3 + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case 4:
-      {
-        int k, len = strlen_P(ConnectAck4);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(ConnectAck4 + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-    case 5:
-      {
-        int k, len = strlen_P(ConnectAck5);
-        char myChar;
-        for (k = 0; k < len; k++)
-        {
-          myChar =  pgm_read_byte_near(ConnectAck5 + k);
-          DB_SERIAL.print(myChar);
-        }
-        break;
-      }
-  }
+    char * ptr = (char *) pgm_read_word (&list [index]);
+    char buffer [80]; // must be large enough!
+//    DB_SERIAL.print("INDEX ");
+//    DB_SERIAL.print(index);
+//    DB_SERIAL.print(" STRLEN ");
+//    DB_SERIAL.println(strlen_P(ptr));
+    strcpy_P (buffer, ptr);
+    DB_SERIAL.print(buffer);
 }
 unsigned int GSM_MQTT::_generateMessageID(void)
 {
@@ -806,7 +612,7 @@ void SERIALEVENT()
         {
           DB_SERIAL.print("MSG type ");
           DB_SERIAL.println(ReceivedMessageType);
-          MQTT.printMessageType(ReceivedMessageType);
+          MQTT.printConstString(GeneralMessages,ReceivedMessageType);
           MQTT.index = 0L;
           uint32_t a = 0;
           while ((MQTT.length-- > 0) && (GSM_SERIAL.available()))
@@ -824,7 +630,7 @@ void SERIALEVENT()
               MQTT.MQTT_Flag = true;
               MQTT.OnConnect();
             }
-            MQTT.printConnectAck(MQTT.ConnectionAcknowledgement);
+            MQTT.printConstString(ConnectMessages,MQTT.ConnectionAcknowledgement);
             // MQTT.OnConnect();
           }
           else if (ReceivedMessageType == PUBLISH)

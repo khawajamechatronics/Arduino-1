@@ -10,9 +10,10 @@ String MQTT_HOST = "test.mosquitto.org";
 /*
    MQTT host address
 */
-String MQTT_PORT = "1883";
+int MQTT_PORT = 1883;
 String APN = "uinternet";
-
+String USERID = "";
+String PASSWORD = "";
 /*
    MQTT port
 */
