@@ -19,7 +19,6 @@
 
 #define GSM_SERIAL Serial1
 #define SERIALEVENT serialEvent1
-//#define DB_SERIAL Serial
 #define UART_BUFFER_LENGTH 300    //Maximum length allowed for UART data
 #define TOPIC_BUFFER_LENGTH 50    //Maximum length allowed Topic
 #define MESSAGE_BUFFER_LENGTH 200  //Maximum length allowed data
@@ -107,6 +106,12 @@ class GSM_MQTT
     void printConstString(const char * const list[],int index);
     char sendATreply(char *command, char *replystr, unsigned long waitms);
     void Reset(void);
+    void DebugPrint(char *);
+    void DebugPrintln(char *);
+    void DebugPrint(int);
+    void DebugPrintln(int);
+    void DebugPrint(char);
+    void DebugPrintln(char);
   private:
     volatile unsigned int _LastMessaseID = 0;
     volatile int _ProtocolVersion = 3;

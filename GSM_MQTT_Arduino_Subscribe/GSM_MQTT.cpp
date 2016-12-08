@@ -16,14 +16,15 @@
  *   Add USERID, PASSWORD
  *   Replace printMessageType and printConnectAck by printConstString
  *   Bugfix replace 200 by UART_BUFFER_LENGTH in SERIALEVENT
+ *   
+ *   Changed all mySerial.print to new method DebugPrint. Now user must implement
+ *   DebugPrint as he sees fit
  */
 #include "GSM_MQTT.h"
 #include "Arduino.h"
-#include <SoftwareSerial.h>
 #include <avr/pgmspace.h>
 //extern uint8_t GSM_Response;
 
-extern SoftwareSerial DB_SERIAL;
 extern String MQTT_HOST;
 extern int MQTT_PORT;
 extern String APN;
@@ -44,7 +45,6 @@ GSM_MQTT::GSM_MQTT(unsigned long KeepAlive)
 void GSM_MQTT::begin(void)
 {
   bool init = false;
-  DB_SERIAL.begin(9600);
   GSM_SERIAL.begin(9600);
 //  GSM_SERIAL.write("AT\r\n");
   while (!init)
@@ -52,7 +52,7 @@ void GSM_MQTT::begin(void)
     if (sendATreply("AT\r","OK",1000) == 1)
       init = true;
     else
-      GSM_MQTT::Reset();
+      MQTT.Reset();
   }
   delay(1000);
   _tcpInit();
@@ -64,8 +64,8 @@ char GSM_MQTT::_sendAT(char *command, unsigned long waitms)
   GSM_Response = 0;
   GSM_SERIAL.write(command);
   unsigned long currentMillis = millis();
-  //  DB_SERIAL.println(PrevMillis);
-  //  DB_SERIAL.println(currentMillis);
+  //  MQTT.DebugPrintln(PrevMillis);
+  //  MQTT.DebugPrintln(currentMillis);
   while ( (GSM_Response == 0) && ((currentMillis - PrevMillis) < waitms) )
   {
     //    delay(1);
@@ -82,8 +82,8 @@ char GSM_MQTT::sendATreply(char *command, char *replystr, unsigned long waitms)
   GSM_SERIAL.write(command);
   unsigned long currentMillis = millis();
 
-  //  DB_SERIAL.println(PrevMillis);
-  //  DB_SERIAL.println(currentMillis);
+  //  MQTT.DebugPrintln(PrevMillis);
+  //  MQTT.DebugPrintln(currentMillis);
   while ( (GSM_ReplyFlag == 0) && ((currentMillis - PrevMillis) < waitms) )
   {
     //    delay(1);
@@ -94,8 +94,8 @@ char GSM_MQTT::sendATreply(char *command, char *replystr, unsigned long waitms)
 }
 void GSM_MQTT::_tcpInit(void)
 {
-  DB_SERIAL.print("MS ");
-  DB_SERIAL.println(modemStatus);
+  MQTT.DebugPrint("MS ");
+  MQTT.DebugPrintln(modemStatus);
   switch (modemStatus)
   {
     case 0:
@@ -166,8 +166,8 @@ void GSM_MQTT::_tcpInit(void)
           }
         }
         _tcpStatusPrev = _tcpStatus;
-        DB_SERIAL.print("TSC_S ");
-        DB_SERIAL.println(_tcpStatus);
+        MQTT.DebugPrint("TSC_S ");
+        MQTT.DebugPrintln(_tcpStatus);
         switch (_tcpStatus)
         {
           case 2:
@@ -254,9 +254,9 @@ void GSM_MQTT::_sendUTFString(char *s)
 {
   int localLength = strlen(s);
 #if 0
-  DB_SERIAL.print("LL ");
-  DB_SERIAL.println(localLength);
-  DB_SERIAL.println(s);
+  MQTT.DebugPrint("LL ");
+  MQTT.DebugPrintln(localLength);
+  MQTT.DebugPrintln(s);
 #endif
   GSM_SERIAL.print(char(localLength / 256));
   GSM_SERIAL.print(char(localLength % 256));
@@ -266,8 +266,8 @@ void GSM_MQTT::_sendLength(int len)
 {
   bool  length_flag = false;
 #if 0
-  DB_SERIAL.print("L ");
-  DB_SERIAL.println(len);
+  MQTT.DebugPrint("L ");
+  MQTT.DebugPrintln(len);
 #endif
   while (length_flag == false)
   {
@@ -440,12 +440,12 @@ void GSM_MQTT::printConstString(const char * const list[],int index)
 {
     char * ptr = (char *) pgm_read_word (&list [index]);
     char buffer [80]; // must be large enough!
-//    DB_SERIAL.print("INDEX ");
-//    DB_SERIAL.print(index);
-//    DB_SERIAL.print(" STRLEN ");
-//    DB_SERIAL.println(strlen_P(ptr));
+//    MQTT.DebugPrint("INDEX ");
+//    MQTT.DebugPrint(index);
+//    MQTT.DebugPrint(" STRLEN ");
+//    MQTT.DebugPrintln(strlen_P(ptr));
     strcpy_P (buffer, ptr);
-    DB_SERIAL.print(buffer);
+    MQTT.DebugPrint(buffer);
 }
 unsigned int GSM_MQTT::_generateMessageID(void)
 {
@@ -478,7 +478,7 @@ void SERIALEVENT()
   while (GSM_SERIAL.available())
   {
     char inChar = (char)GSM_SERIAL.read();
-    DB_SERIAL.print(inChar);
+    MQTT.DebugPrint(inChar);
     if (MQTT.TCP_Flag == false)
     {
       if (MQTT.index < UART_BUFFER_LENGTH)
@@ -542,7 +542,7 @@ void SERIALEVENT()
         {
           GSM_Response = 4;
           MQTT.TCP_Flag = true;
-          DB_SERIAL.println("MQTT.TCP_Flag True");
+          MQTT.DebugPrintln("MQTT.TCP_Flag True");
           MQTT.AutoConnect();
           MQTT.pingFlag = true;
           MQTT.tcpATerrorcount = 0;
@@ -576,8 +576,8 @@ void SERIALEVENT()
           if (GSM_SERIAL.available())
           {
             inChar = (char)GSM_SERIAL.read();
-//            DB_SERIAL.print((char)'.');
-//            DB_SERIAL.print((unsigned char)inChar, HEX);
+//            MQTT.DebugPrint((char)'.');
+//            MQTT.DebugPrint((unsigned char)inChar, HEX);
             if ((((Cchar & 0xFF) == 'C') && ((inChar & 0xFF) == 'L') && (MQTT.length == 0)) || (((Cchar & 0xFF) == '+') && ((inChar & 0xFF) == 'P') && (MQTT.length == 0)))
             {
               MQTT.index = 0;
@@ -586,7 +586,7 @@ void SERIALEVENT()
               MQTT.TCP_Flag = false;
               MQTT.MQTT_Flag = false;
               MQTT.pingFlag = false;
-              DB_SERIAL.println("Disconnecting");
+              MQTT.DebugPrintln("Disconnecting");
             }
             else
             {
@@ -594,7 +594,7 @@ void SERIALEVENT()
               {
                 MQTT.length += (inChar & 127) *  multiplier;
                 multiplier *= 128;
-                DB_SERIAL.println("More");
+                MQTT.DebugPrintln("More");
               }
               else
               {
@@ -606,12 +606,12 @@ void SERIALEVENT()
           }
         }
         MQTT.lengthLocal = MQTT.length;
-//        DB_SERIAL.print('L');
-//        DB_SERIAL.println(MQTT.length);
+//        MQTT.DebugPrint('L');
+//        MQTT.DebugPrintln(MQTT.length);
         if (MQTT.TCP_Flag == true)
         {
-          DB_SERIAL.print("MSG type ");
-          DB_SERIAL.println(ReceivedMessageType);
+          MQTT.DebugPrint("MSG type ");
+          MQTT.DebugPrintln(ReceivedMessageType);
           MQTT.printConstString(GeneralMessages,ReceivedMessageType);
           MQTT.index = 0L;
           uint32_t a = 0;
@@ -620,7 +620,7 @@ void SERIALEVENT()
             MQTT.inputString[uint32_t(MQTT.index++)] = (char)GSM_SERIAL.read();
             delay(1);
           }
-        //  DB_SERIAL.println(" ");
+        //  MQTT.DebugPrintln(" ");
           if (ReceivedMessageType == CONNACK)
           {
             MQTT.ConnectionAcknowledgement = MQTT.inputString[0] * 256 + MQTT.inputString[1];
@@ -636,15 +636,15 @@ void SERIALEVENT()
           else if (ReceivedMessageType == PUBLISH)
           {
             uint32_t TopicLength = (MQTT.inputString[0]) * 256 + (MQTT.inputString[1]);
-            DB_SERIAL.print("Topic : '");
+            MQTT.DebugPrint("Topic : '");
             MQTT.PublishIndex = 0;
             for (uint32_t iter = 2; iter < TopicLength + 2; iter++)
             {
-              DB_SERIAL.print(MQTT.inputString[iter]);
+              MQTT.DebugPrint(MQTT.inputString[iter]);
               MQTT.Topic[MQTT.PublishIndex++] = MQTT.inputString[iter];
             }
             MQTT.Topic[MQTT.PublishIndex] = 0;
-            DB_SERIAL.print("' Message :'");
+            MQTT.DebugPrint("' Message :'");
             MQTT.TopicLength = MQTT.PublishIndex;
 
             MQTT.PublishIndex = 0;
@@ -657,11 +657,11 @@ void SERIALEVENT()
             }
             for (uint32_t iter = (MessageSTART); iter < (MQTT.lengthLocal); iter++)
             {
-              DB_SERIAL.print(MQTT.inputString[iter]);
+              MQTT.DebugPrint(MQTT.inputString[iter]);
               MQTT.Message[MQTT.PublishIndex++] = MQTT.inputString[iter];
             }
             MQTT.Message[MQTT.PublishIndex] = 0;
-            DB_SERIAL.println("'");
+            MQTT.DebugPrintln("'");
             MQTT.MessageLength = MQTT.PublishIndex;
             if (QoS == 1)
             {
@@ -676,28 +676,28 @@ void SERIALEVENT()
           }
           else if (ReceivedMessageType == PUBREC)
           {
-            DB_SERIAL.print("Message ID :");
+            MQTT.DebugPrint("Message ID :");
             MQTT.publishREL(0, MQTT.inputString[0] * 256 + MQTT.inputString[1]) ;
-            DB_SERIAL.println(MQTT.inputString[0] * 256 + MQTT.inputString[1]) ;
+            MQTT.DebugPrintln(MQTT.inputString[0] * 256 + MQTT.inputString[1]) ;
 
           }
           else if (ReceivedMessageType == PUBREL)
           {
-            DB_SERIAL.print("Message ID :");
+            MQTT.DebugPrint("Message ID :");
             MQTT.publishCOMP(MQTT.inputString[0] * 256 + MQTT.inputString[1]) ;
-            DB_SERIAL.println(MQTT.inputString[0] * 256 + MQTT.inputString[1]) ;
+            MQTT.DebugPrintln(MQTT.inputString[0] * 256 + MQTT.inputString[1]) ;
 
           }
           else if ((ReceivedMessageType == PUBACK) || (ReceivedMessageType == PUBCOMP) || (ReceivedMessageType == SUBACK) || (ReceivedMessageType == UNSUBACK))
           {
-            DB_SERIAL.print("Message ID :");
-            DB_SERIAL.println(MQTT.inputString[0] * 256 + MQTT.inputString[1]) ;
+            MQTT.DebugPrint("Message ID :");
+            MQTT.DebugPrintln(MQTT.inputString[0] * 256 + MQTT.inputString[1]) ;
           }
           else if (ReceivedMessageType == PINGREQ)
           {
             MQTT.TCP_Flag = false;
             MQTT.pingFlag = false;
-            DB_SERIAL.println("Disconnecting");
+            MQTT.DebugPrintln("Disconnecting");
             MQTT.sendATreply("AT+CIPSHUT\r\n", ".", 4000) ;
             MQTT.modemStatus = 0;
           }
@@ -708,8 +708,8 @@ void SERIALEVENT()
       }
       else
       {
-        DB_SERIAL.print("Received :Unknown Message Type :");
-        DB_SERIAL.println(inChar);
+        MQTT.DebugPrint("Received :Unknown Message Type :");
+        MQTT.DebugPrintln(inChar);
       }
     }
   }

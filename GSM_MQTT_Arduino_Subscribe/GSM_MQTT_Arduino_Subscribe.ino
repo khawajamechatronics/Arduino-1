@@ -17,7 +17,7 @@ String PASSWORD = "";
 /*
    MQTT port
 */
-SoftwareSerial DB_SERIAL(2,3); // RX, TX
+SoftwareSerial mySerial(2,3); // RX, TX
 char *UserID = "abcdef";
 /*
    Software Serial through which mqtt events log is printed at 9600 baud rate
@@ -25,12 +25,37 @@ char *UserID = "abcdef";
 #define RESET_PIN 8
 void GSM_MQTT::Reset()
 {
-  DB_SERIAL.println("RS");
+  mySerial.println("RS");
   pinMode(RESET_PIN,OUTPUT);
   digitalWrite(RESET_PIN,HIGH);
   delay(1200);
   digitalWrite(RESET_PIN,LOW);
   delay(10000);
+}
+
+void GSM_MQTT::DebugPrint(char * s)
+{
+  mySerial.print(s);
+}
+void GSM_MQTT::DebugPrintln(char * s)
+{
+  mySerial.println(s);
+}
+void GSM_MQTT::DebugPrint(int i)
+{
+  mySerial.print(i);
+}
+void GSM_MQTT::DebugPrintln(int i)
+{
+  mySerial.println(i);
+}
+void GSM_MQTT::DebugPrint(char c)
+{
+  mySerial.print(c);
+}
+void GSM_MQTT::DebugPrintln(char c)
+{
+  mySerial.println(c);
 }
 void GSM_MQTT::AutoConnect(void)
 {
@@ -89,7 +114,7 @@ void GSM_MQTT::OnConnect(void)
      This function is called when mqqt connection is established.
      put your subscription publish codes here.
   */
-//  DB_SERIAL.println("OCN");
+  mySerial.println("OCN");
   subscribe(0,_generateMessageID(), "ST", 1);
   /*    void subscribe(char DUP, unsigned int MessageID, char *SubTopic, char SubQoS);
           DUP       :This flag is set when the client or server attempts to re-deliver a SUBSCRIBE message
@@ -137,11 +162,11 @@ void GSM_MQTT::OnMessage(char *Topic, int TopicLength, char *Message, int Messag
      Message      :The containing array
      MessageLength:Number of characters in message
   */
-  DB_SERIAL.print("<< ");
-  DB_SERIAL.print(TopicLength);
-  DB_SERIAL.print(Topic);
-  DB_SERIAL.print(MessageLength);
-  DB_SERIAL.println(Message);
+  mySerial.print("<< ");
+  mySerial.print(TopicLength);
+  mySerial.print(Topic);
+  mySerial.print(MessageLength);
+  mySerial.println(Message);
 
 }
 GSM_MQTT MQTT(30);
@@ -154,6 +179,7 @@ void setup()
   // initialize mqtt:
   // GSM modem should be connected to Hardware Serial
   //  index =0;
+  mySerial.begin(9600);
   MQTT.begin();
   /*
      You can write your code here
