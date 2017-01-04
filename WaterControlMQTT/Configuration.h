@@ -17,8 +17,8 @@ const int BLUE_LED_PIN = 11;
 const int RED_LED_PIN = 12;
 const int ONBOARD_LED = 13;
 //const int BUTTON = 20; // must be an interrupt pin
-const int METER_0_DRDY = 21; // alarm must be an interrupt pin
-const int METER_1_DRDY = 20; // alarm must be an interrupt pin
+const int METER1_DRDY = 21; // alarm must be an interrupt pin
+const int METER2_DRDY = 20; // alarm must be an interrupt pin
 
 // water meter observer calibration
 
@@ -44,6 +44,8 @@ const int METER_1_DRDY = 20; // alarm must be an interrupt pin
 #define DEFAULT_TICKS_PER_LITER 265
 #define DEFAULT_HTTP_SERVER "david-henry.dyndns.tv"
 #define DEFAULT_GPRS_TIMEOUT 15
+#define DEFAULT_BROKER "david-henry.dyndns.tv"
+#define DEFAULT_USER "calaniot3"
 
 // Useful universal macros
 #define SMS_LENGTH 160
@@ -54,8 +56,5 @@ const int METER_1_DRDY = 20; // alarm must be an interrupt pin
 // GSM modem tcp/ip sessions
 #define HTTPCID  1
 #define SMTPCID  2
-
-#define DEBUG_SERIAL Serial   // comment out if using software serial
-#define DEBUG_BAUD_RATE 115200
 
 #endif

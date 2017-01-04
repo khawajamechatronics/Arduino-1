@@ -1,6 +1,4 @@
 #include <avr/pgmspace.h>
-#include <Time.h>
-#include <TimeLib.h>
 #include "Arduino.h"
 #include "Configuration.h"
 #include "Remote.h"
@@ -12,10 +10,7 @@
 //#include "smtp.h"
 #include "inetGSM.h"
 #include "wcEEPROM.h"
-#ifndef DEBUG_SERIAL
-#include <SendOnlySoftwareSerial.h>
-extern SendOnlySoftwareSerial DEBUG_SERIAL;
-#endif
+//#include "DS3234.h"
 
 char * EEPROMGetIndex(enum eEEPROMIndex);
 
@@ -28,7 +23,7 @@ boolean started=false;
 char smsbuffer[SMS_LENGTH];
 char IncomingPhone[20];  // phone number
 char SMStime[20];  // timestamp
-extern bool SMSout;  // if true send SMS else print to DEBUG_SERIAL
+extern bool SMSout;  // if true send SMS else print to Serial
 #ifdef ANTENNA_BUG
 extern bool ignoreMeter;     // set true while sending emails
 #endif
@@ -39,14 +34,14 @@ void Connect(int cid)
   bool rc = false;
    //GPRS attach, put in order APN, username and password.
   if (inet.CloseGprs(HTTPCID)) // ignore if error
-    DEBUG_SERIAL.println("status=DETACHED");
+    Serial.println("status=DETACHED");
   else
-    DEBUG_SERIAL.println("status=NOT DETACHED");
-  DEBUG_SERIAL.println(EEPROMGetIndex(APN));
+    Serial.println("status=NOT DETACHED");
+//  Serial.println(EEPROMGetIndex(APN));
   while (!inet.OpenGprs(cid,EEPROMGetIndex(APN),20))
 //  while (!inet.OpenGprs(HTTPCID,"uinternet",20))
-    DEBUG_SERIAL.println("status=NOT ATTACHED");
-  DEBUG_SERIAL.println("status=ATTACHED");
+    Serial.println("status=NOT ATTACHED");
+  Serial.println("status=ATTACHED");
 }
 
 bool RemoteInit(enum eRemoteType type)
@@ -68,6 +63,13 @@ bool RemoteInit(enum eRemoteType type)
         Connect(HTTPCID); // loops until done
       }
       break;
+	case MQTT_REMOTE:
+      success = gsm.begin(REMOTE_BAUD);
+      if (success)
+      {
+        Connect(HTTPCID); // loops until done
+      }
+		break;
   }
   return success;
 }
@@ -82,13 +84,13 @@ bool RemoteMessageAvailable(char *msg,char *timestamp)
       // modified GetSMS to extract timestamp
       sms.GetSMS(i,IncomingPhone,SMStime,smsbuffer,SMS_LENGTH);
 #if 0
-      DEBUG_SERIAL.print("Incoming from: ");
-      DEBUG_SERIAL.println("--");
-      DEBUG_SERIAL.println(IncomingPhone);
-      DEBUG_SERIAL.println("--");
-      DEBUG_SERIAL.println(SMStime);
-      DEBUG_SERIAL.println("--");
-      DEBUG_SERIAL.println(smsbuffer);
+      Serial.print("Incoming from: ");
+      Serial.println("--");
+      Serial.println(IncomingPhone);
+      Serial.println("--");
+      Serial.println(SMStime);
+      Serial.println("--");
+      Serial.println(smsbuffer);
 #endif
       strcpy(LastIncomingPhone,"0545919886"/*IncomingPhone*/);
       strcpy(timestamp,SMStime);
@@ -117,12 +119,11 @@ char *RemoteGetClock()
     cs++;
     ce = strchr(cs,'+');
     *ce = 0;
- //   DEBUG_SERIAL.println(cs);
-  //  DEBUG_SERIAL.println(urlencode(cs,cooked));
-  //  DEBUG_SERIAL.println(cooked);
-  //  urlencode(cs,cooked);
-  //  return cooked;
-    return cs;    
+  //  Serial.println(cs);
+  //  Serial.println(urlencode(cs,cooked));
+  //  Serial.println(cooked);
+    urlencode(cs,cooked);
+    return cooked;    
   }
   else
     return "0";
@@ -159,14 +160,14 @@ int HTTPGet(char *server,char *url,char *buf, int buflen)
 #ifdef ANTENNA_BUG
  // ignoreMeter = false; 
 #endif
-  DEBUG_SERIAL.print("Length of data received: ");
-  DEBUG_SERIAL.println(CR);  
+  Serial.print("Length of data received: ");
+  Serial.println(CR);  
     // extract return code from Nth line HTTP/1.1 200 OK
-  DEBUG_SERIAL.println("--------------------------------");
+  Serial.println("--------------------------------");
   if (CR > 0)
   {
     c = strchr(buf,'H');
-    DEBUG_SERIAL.println(c);
+    Serial.println(c);
     c = strchr(c,' ');
     sscanf(c,"%d",&rc);
     return rc;    
@@ -182,28 +183,28 @@ bool RemoteSendMessage(char * srv, char *url, int port) // to http server
   bool success = false;
   int rc;
   memcpy(SRV,srv,30);
-  DEBUG_SERIAL.print(SRV);
-  DEBUG_SERIAL.println(url);
+  Serial.println(SRV);
+  Serial.println(url);
   // check if connection still open, if not re-open
  // check IP address
   char *c = inet.GetGprsIP(HTTPCID);
-  DEBUG_SERIAL.println(c);
+  Serial.println(c);
   if (strcmp(c,"0.0.0.0") == 0)
   {
     // restart GPRS
-    DEBUG_SERIAL.println("Restart GPRS");
+    Serial.println("Restart GPRS");
     gsm.Echo(0);
     gsm.RxInit(15000, 2000); 
     Connect(HTTPCID);
     c = inet.GetGprsIP(HTTPCID);
-    DEBUG_SERIAL.println(c);
+    Serial.println(c);
   }
   retries = 3;
   success = false;
   while (retries-- > 0 && !success)
   {
     rc = HTTPGet(SRV,url,smsbuffer,sizeof(smsbuffer));
-    DEBUG_SERIAL.println(rc);
+    Serial.println(rc);
     success = (rc == 200);
   }
   return success;
@@ -218,31 +219,4 @@ bool RemoteSendSMS(char *msg)
 {
   return sms.SendSMS(EEPROMGetIndex(DP),msg);
 }
-
-  // convert output string from SIM900 to unix type
-time_t Sim900ToEpoch(char *s)
-{
-  // NOTE I'm assuming we are east og GMT
-  int tt[7];
-  byte delim[6] = {'/','/',',',':',':','+'};
-  char *f;
-  for (int i=0;i<7;i++)
-  {
-    f = strchr(s,delim[i]);
-    *f++ = 0; // isolate year
-    tt[i] = atoi(s);
-  //  DEBUG_SERIAL.println(tt[i]); // year
-    s += strlen(s)+1;   // next field   
-  }
-  tt[0] += 2000;
-  setTime(tt[3],tt[4],tt[5],tt[2],tt[1],tt[0]);  // note order h/m/s/d/m/y
-  return now() - (tt[6]*900); // add diff from GMT
-}
-
-// convert current time in SIM900 to unix type
-time_t Sim900ToEpoch()
-{
-  return Sim900ToEpoch(RemoteGetClock());
-}
-
 

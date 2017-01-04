@@ -21,24 +21,22 @@
   unsigned pulsewidth;    // b
   char HTTPServer[30];    // c
   bool useSSL;            // d
-  int gprstimeout;       // e
-  unsigned TicksPerLiter0;  // f
-  unsigned TicksPerLiter1;  // g
+  int gprstimeout;        // e
+  char MQTTbroker[30];    // f   // New for MQTT version
+  char id[20];            // g
  };
 
-enum eEEPROMIndex {TPL,LIS,DP,SmS,EA,EP,ER,APN,SENDSMS,RR,POL,PW,HTTPs,useSSL,GPRSTO,TPL0,TPL1};
+enum eEEPROMIndex {TPL,LIS,DP,SmS,EA,EP,ER,APN,SENDSMS,RR,POL,PW,HTTPs,useSSL,GPRSTO,BROKER,ID};
 void EEPROMSetIndex(enum eEEPROMIndex i,char * s);
 char *EEPROMGetIndex(enum eEEPROMIndex i);
 
 void InitEepromData(void);
 void PrintEepromData(void);
-char *EEPROMGetIndex(enum eEEPROMIndex i);
+char * EEPROMGetIndex(enum eEEPROMIndex i);
 void EEPROMSetIndex(enum eEEPROMIndex i,char * s);
 void eepromgetarray(int startaddress,uint8_t *target,int l);
 void eepromsetarray(int startaddress,uint8_t *source,int l);
 void eepromgetstring(int startaddress,char *target,int maxlength);
 void eepromsetstring(int startaddress,char *source,int maxlength);
-void EEPROMReport(int indices[],int numindices);
-
 #endif
 

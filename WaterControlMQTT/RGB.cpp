@@ -1,12 +1,5 @@
 #include "Arduino.h"
-#include "Configuration.h"
 #include "RGB.h"
-#ifndef DEBUG_SERIAL
-#include <SendOnlySoftwareSerial.h>
-extern SendOnlySoftwareSerial DEBUG_SERIAL;
-#endif
-
-
 enum rgbstate redled;
 enum rgbstate blueled;
 enum rgbstate greenled;
@@ -14,7 +7,7 @@ enum rgbstate greenled;
 void RGBActivate(enum rgbled led ,enum rgbstate onoff)
 {
   int pin;
-  //DEBUG_SERIAL.print(led);DEBUG_SERIAL.print(" ");DEBUG_SERIAL.println(onoff);
+  //Serial.print(led);Serial.print(" ");Serial.println(onoff);
   switch(led)
   {
     case RED_LED:
@@ -30,10 +23,10 @@ void RGBActivate(enum rgbled led ,enum rgbstate onoff)
       greenled = onoff;
       break;
     default:
-      DEBUG_SERIAL.print("Unknown led :"),DEBUG_SERIAL.println(led);
+      Serial.print("Unknown led :"),Serial.println(led);
       return;
   }
-  //DEBUG_SERIAL.print(pin);DEBUG_SERIAL.print(" ");DEBUG_SERIAL.println(onoff);
+  //Serial.print(pin);Serial.print(" ");Serial.println(onoff);
   if (onoff == LED_ON)
     digitalWrite(pin,HIGH);
   else

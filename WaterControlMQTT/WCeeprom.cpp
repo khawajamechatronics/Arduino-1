@@ -3,16 +3,11 @@
 #include <EEPROM.h>
 #include "Configuration.h"
 #include "WCeeprom.h"
-#ifndef DEBUG_SERIAL
-#include <SendOnlySoftwareSerial.h>
-extern SendOnlySoftwareSerial DEBUG_SERIAL;
-#endif
-
 
 char TempBuf[20];  // buffer in main program
 extern unsigned MAX_FLOW_TIME; // default secs
 extern unsigned long REPORT_RATE;  // report every hour
-extern unsigned TicksPerLiter[];
+extern unsigned TicksPerLiter;
 extern bool SMSout;  // save on sending SMS just print to Serial
 extern bool polaritySwitch;
 extern unsigned PulseWidth;   // pulse to solenoid
@@ -43,31 +38,30 @@ void InitEepromData()
   EEPROMSetIndex(useSSL,TempBuf);            // useSSL false 
   sprintf(TempBuf,"%d",DEFAULT_GPRS_TIMEOUT);
   EEPROMSetIndex(GPRSTO,TempBuf);            // time for at+sapbr=1,1 response
-  sprintf(TempBuf,"%d",DEFAULT_TICKS_PER_LITER);
-  EEPROMSetIndex(TPL0,TempBuf);    // ticks per liter
-  sprintf(TempBuf,"%d",DEFAULT_TICKS_PER_LITER);
-  EEPROMSetIndex(TPL1,TempBuf);    // ticks per liter
+  EEPROMSetIndex(BROKER,DEFAULT_BROKER);
+  EEPROMSetIndex(ID,DEFAULT_USER);
 }
 
 void PrintEepromData()
 {
-  DEBUG_SERIAL.println(EEPROMGetIndex(TPL));
-  DEBUG_SERIAL.println(EEPROMGetIndex(LIS));
-  DEBUG_SERIAL.println(EEPROMGetIndex(DP));
-  DEBUG_SERIAL.println(EEPROMGetIndex(SmS));
-  DEBUG_SERIAL.println(EEPROMGetIndex(EA));
-  DEBUG_SERIAL.println(EEPROMGetIndex(EP));
-  DEBUG_SERIAL.println(EEPROMGetIndex(ER));
-  DEBUG_SERIAL.println(EEPROMGetIndex(APN));
-  DEBUG_SERIAL.println(EEPROMGetIndex(SENDSMS));
-  DEBUG_SERIAL.println(EEPROMGetIndex(RR));
-  DEBUG_SERIAL.println(EEPROMGetIndex(POL));
-  DEBUG_SERIAL.println(EEPROMGetIndex(PW));
-  DEBUG_SERIAL.println(EEPROMGetIndex(HTTPs));
-  DEBUG_SERIAL.println(EEPROMGetIndex(useSSL));
-  DEBUG_SERIAL.println(EEPROMGetIndex(GPRSTO));
-  DEBUG_SERIAL.println(EEPROMGetIndex(TPL0));
-  DEBUG_SERIAL.println(EEPROMGetIndex(TPL1));
+ ;
+  Serial.println(EEPROMGetIndex(TPL));
+  Serial.println(EEPROMGetIndex(LIS));
+  Serial.println(EEPROMGetIndex(DP));
+  Serial.println(EEPROMGetIndex(SmS));
+  Serial.println(EEPROMGetIndex(EA));
+  Serial.println(EEPROMGetIndex(EP));
+  Serial.println(EEPROMGetIndex(ER));
+  Serial.println(EEPROMGetIndex(APN));
+  Serial.println(EEPROMGetIndex(SENDSMS));
+  Serial.println(EEPROMGetIndex(RR));
+  Serial.println(EEPROMGetIndex(POL));
+  Serial.println(EEPROMGetIndex(PW));
+  Serial.println(EEPROMGetIndex(HTTPs));
+  Serial.println(EEPROMGetIndex(useSSL));
+  Serial.println(EEPROMGetIndex(GPRSTO));
+  Serial.println(EEPROMGetIndex(BROKER));
+  Serial.println(EEPROMGetIndex(ID));
 }
 
 void eepromgetarray(int startaddress,uint8_t *target,int l)
@@ -115,17 +109,12 @@ void eepromsetarray(int startaddress,uint8_t *source,int l)
 void EEPROMSetIndex(enum eEEPROMIndex i,char * s)
 {
   uint32_t stemp;
-#if 0
-  DEBUG_SERIAL.print(i);
-  DEBUG_SERIAL.print(",");
-  DEBUG_SERIAL.println(s);
-#endif
   switch(i)
   {
     case TPL:
       stemp = atoi(s);
-      eepromsetarray(offsetof(struct eEEPROMmap,TicksPerLiter),(uint8_t *)&stemp,sizeof(unsigned));
-    //  TicksPerLiter = stemp;
+      eepromsetarray(0,(uint8_t *)&stemp,sizeof(unsigned));
+      TicksPerLiter = stemp;
       break;
     case LIS:
       stemp = atol(s);
@@ -183,15 +172,11 @@ void EEPROMSetIndex(enum eEEPROMIndex i,char * s)
       eepromsetarray(offsetof(struct eEEPROMmap,gprstimeout),(uint8_t *)&stemp,sizeof(int));
       gprstimeout = stemp;
       break;
-    case TPL0:
-      stemp = atol(s);
-      eepromsetarray(offsetof(struct eEEPROMmap,TicksPerLiter0),(uint8_t *)&stemp,sizeof(unsigned));
-      TicksPerLiter[0] = stemp;
+    case BROKER:
+      eepromsetstring(offsetof(struct eEEPROMmap,MQTTbroker),s,sizeof(((struct eEEPROMmap*)0)->MQTTbroker));
       break;
-    case TPL1:
-      stemp = atol(s);
-      eepromsetarray(offsetof(struct eEEPROMmap,TicksPerLiter1),(uint8_t *)&stemp,sizeof(unsigned));
-      TicksPerLiter[1] = stemp;
+    case ID:
+      eepromsetstring(offsetof(struct eEEPROMmap,id),s,sizeof(((struct eEEPROMmap*)0)->id));
       break;
   }
 }
@@ -203,11 +188,11 @@ char * EEPROMGetIndex(enum eEEPROMIndex i)
   {
     case TPL:
       eepromgetarray(0,(uint8_t *)&stemp,sizeof(unsigned));
-      sprintf(eeprombuf,"%u",stemp);
+      sprintf(eeprombuf,"%d",stemp);
       break;
     case LIS:
       eepromgetarray(offsetof(struct eEEPROMmap,LeakInSecs),(uint8_t *)&stemp,sizeof(unsigned));
-      sprintf(eeprombuf,"%u",stemp);
+      sprintf(eeprombuf,"%d",stemp);
       break;
     case DP:
       eepromgetstring(offsetof(struct eEEPROMmap,DefaultPhone),eeprombuf,20);
@@ -241,7 +226,7 @@ char * EEPROMGetIndex(enum eEEPROMIndex i)
       break;
     case PW:
       eepromgetarray(offsetof(struct eEEPROMmap,pulsewidth),(uint8_t *)&stemp,sizeof(unsigned));
-      sprintf(eeprombuf,"%u",stemp);
+      sprintf(eeprombuf,"%d",stemp);
       break;
     case HTTPs:
       eepromgetstring(offsetof(struct eEEPROMmap,HTTPServer),eeprombuf,30);
@@ -254,16 +239,14 @@ char * EEPROMGetIndex(enum eEEPROMIndex i)
       eepromgetarray(offsetof(struct eEEPROMmap,gprstimeout),(uint8_t *)&stemp,sizeof(int));
       sprintf(eeprombuf,"%d",stemp);
       break;
-    case TPL0:
-      eepromgetarray(offsetof(struct eEEPROMmap,TicksPerLiter0),(uint8_t *)&stemp,sizeof(unsigned));
-      sprintf(eeprombuf,"%u",stemp);
+    case BROKER:
+      eepromgetstring(offsetof(struct eEEPROMmap,MQTTbroker),eeprombuf,30);
       break;
-    case TPL1:
-      eepromgetarray(offsetof(struct eEEPROMmap,TicksPerLiter1),(uint8_t *)&stemp,sizeof(unsigned));
-      sprintf(eeprombuf,"%u",stemp);
+    case ID:
+      eepromgetstring(offsetof(struct eEEPROMmap,id),eeprombuf,20);
       break;
   }
-//  DEBUG_SERIAL.print("GI:");DEBUG_SERIAL.println(eeprombuf);
+//  Serial.print("GI:");Serial.println(eeprombuf);
   return eeprombuf;
 }
 
