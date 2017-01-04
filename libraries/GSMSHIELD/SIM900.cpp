@@ -86,7 +86,7 @@ int SIMCOM900::read(char* result, int resultlength)
 	for(i=0; i<resultlength;i++){
 		temp=gsm.read();
 		if(temp>0){
-			Serial.print(temp);
+			DEBUG_SERIAL.print(temp);
 			result[i]=temp;
 		}
 	}
@@ -124,7 +124,7 @@ int SIMCOM900::read(char* result, int resultlength)
 
 boolean SIMCOM900::readSMS(char* msg, int msglength, char* number, int nlength)
 {
-  Serial.println(F("This method is deprecated! Please use GetSMS in the SMS class."));
+  DEBUG_SERIAL.println(F("This method is deprecated! Please use GetSMS in the SMS class."));
   long index;
   char *p_char; 
   char *p_char1;
@@ -179,15 +179,15 @@ boolean SIMCOM900::readSMS(char* msg, int msglength, char* number, int nlength)
 	// #ifdef MEGA
 	//index=_cell.read();
 	// #endif
-	// Serial.println("DEBUG");
+	// DEBUG_SERIAL.println("DEBUG");
 	// #ifdef UNO
 		// _tf.getString("\",\"", "\"", number, nlength);
 	// #endif
-	// Serial.println("PRIMA");
+	// DEBUG_SERIAL.println("PRIMA");
 	// #ifdef MEGA
 		// _cell.getString("\",\"", "\"", number, nlength);
 	// #endif
-	// Serial.println("DEBUG");
+	// DEBUG_SERIAL.println("DEBUG");
 	// #ifdef UNO
 		// _tf.getString("\n", "\nOK", msg, msglength);
 	// #endif
@@ -197,8 +197,8 @@ boolean SIMCOM900::readSMS(char* msg, int msglength, char* number, int nlength)
 	
     SimpleWrite(F("AT+CMGD="));
 	SimpleWriteln(index);
-	// Serial.print("VAL= ");
-	// Serial.println(index);
+	// DEBUG_SERIAL.print("VAL= ");
+	// DEBUG_SERIAL.println(index);
     gsm.WaitResp(5000, 50, "OK"); 
     return true;
   };
@@ -356,14 +356,14 @@ void SIMCOM900::SimpleRead()
 	if(_cell.available()>0){
 		datain=_cell.read();
 		if(datain>0){
-			Serial.print(datain);
+			DEBUG_SERIAL.print(datain);
 		}
 	}
 }
 
 void SIMCOM900::SimpleWrite(char comm)
 {
-//	Serial.write(comm);Serial.write('.');
+//	DEBUG_SERIAL.write(comm);DEBUG_SERIAL.write('.');
 	_cell.write(comm);
 }
 
@@ -413,7 +413,7 @@ void SIMCOM900::WhileSimpleRead()
 	while(_cell.available()>0){
 		datain=_cell.read();
 		if(datain>0){
-			Serial.print(datain);
+			DEBUG_SERIAL.print(datain);
 		}
 	}
 }
@@ -954,10 +954,10 @@ char GSM::ComparePhoneNumber(byte position, char *phone_number)
   ret_val = 0; // numbers are not the same so far
   if (position == 0) return (-3);
   if (1 == GetPhoneNumber(position, sim_phone_number)) {
-  Serial.print("CHIAMANTE ");
-  Serial.println(phone_number);
-  Serial.print("SALVATO ");
-  Serial.println(sim_phone_number);
+  DEBUG_SERIAL.print("CHIAMANTE ");
+  DEBUG_SERIAL.println(phone_number);
+  DEBUG_SERIAL.print("SALVATO ");
+  DEBUG_SERIAL.println(sim_phone_number);
   
     // there is a valid number at the spec. SIM position
     // -------------------------------------------------

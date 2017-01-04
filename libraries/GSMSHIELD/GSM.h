@@ -4,7 +4,14 @@
 //#define UNO
 #define MEGA
 
-#include <SoftwareSerial.h>
+// define DEBUG_SERIAL here, must be initialized in main program
+#if 0
+#include <SendOnlySoftwareSerial.h>
+extern SendOnlySoftwareSerial DEBUG_SERIAL;
+#else
+#define DEBUG_SERIAL Serial
+#endif
+//#include <SoftwareSerial.h>
 #include <inttypes.h>
 #include "WideTextFinder.h"
 

@@ -2,48 +2,48 @@
 #include "HWSerial.h"
 #ifdef MEGA
 	HWSerial::HWSerial(){
-			Serial1.begin(9600);
+			HW_SERIAL.begin(9600);
 			
 	}
 	/*
 	bool HWSerial::listen(){
-		return Serial1.listen();
+		return HW_SERIAL.listen();
 	}
 	*/
 	void HWSerial::end(){
-		Serial1.end();
+		HW_SERIAL.end();
 	}
 	/*
 	bool HWSerial::isListening(){
-		return Serial1.isListening();
+		return HW_SERIAL.isListening();
 	}
 
 	bool HWSerial::overflow(){
-		return Serial1.overflow();
+		return HW_SERIAL.overflow();
 	}
 	*/
 	void HWSerial::begin(long baud_rate){
-		Serial1.begin(baud_rate);
+		HW_SERIAL.begin(baud_rate);
 	}
 	
 	int HWSerial::peek(){
-		return Serial1.peek();
+		return HW_SERIAL.peek();
 	}
 
 	 size_t HWSerial::write(uint8_t byte){
-		return Serial1.write(byte);
+		return HW_SERIAL.write(byte);
 	}
 
 	 int HWSerial::read(){
-		return Serial1.read();
+		return HW_SERIAL.read();
 	}
 		
 	 int HWSerial::available(){
-		return Serial1.available();
+		return HW_SERIAL.available();
 	}
 
 	 void HWSerial::flush(){
-		Serial1.flush();
+		HW_SERIAL.flush();
 	}
 	
 	

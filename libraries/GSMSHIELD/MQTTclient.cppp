@@ -1,0 +1,47 @@
+#include "MQTTclient.h"
+
+extern InetGSM inet;
+
+/*
+  main creates instant
+  MQTTGSM mqtt;
+  
+  API
+  bool MqttSetBroker(char *broker_url);	//default port 1883
+  bool MqttSetBroker(char *broker_url, int port);
+  
+  Assumption
+  gsm and inet objects already exists
+  caller already opened up the GPRS session
+*/
+bool socketopen = false;
+enum eConnAck MQTTGSM::MqttSetBroker(char *broker_url,int keepalive, int port)
+{
+	struct {
+		struct mqttFixedHeader FH;
+		struct mqttConnectVariableHeader VH;
+	} connectmessage;
+	enum eConnAck rc = CONN_ERROR;
+	// open up TCP socket, keeps open until falls
+	// prepare the message, open socket send it
+	if (!socketopen)
+	{
+		if (inet.connectTCP(broker_url,port) == 0)
+		{
+			socketopen = true;	
+			memset(&connectmessage,sizeof(connectmessage),0);
+			connectmessage.FH.controlType = CONNECT;
+			connectmessage.FH.remainingLengthb0 = sizeof(struct mqttConnectVariableHeader);
+			connectmessage.VH.length = byteswap(sizeof(struct mqttConnectVariableHeader) - sizeof(unsigned short));
+			strcpy(connectmessage.VH.m,"MQTT");
+			connectmessage.VH.level = 0x04;
+			connectmessage.VH.keepalive = byteswap(keepalive);
+		};
+	}
+	return rc;
+}
+
+enum eConnAck MQTTGSM::MqttSetBroker(char *broker_url,int keepalive)	//default port 1883
+{
+	return MqttSetBroker(broker_url,keepalive, 1883);
+}

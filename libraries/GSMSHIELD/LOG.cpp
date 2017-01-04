@@ -15,45 +15,45 @@ LOG::LOG(int level)
 void LOG::DATA(const char* string)
 {
  if (_level > 4){
-  Serial.print(string);
+  DEBUG_SERIAL.print(string);
  }
 }
 
 void LOG::DATA(int number)
 {
  if (_level > 4){
-  Serial.print(number);
+  DEBUG_SERIAL.print(number);
  }
 }
 
 void LOG::DEBUG(const char* string)
 {
  if (_level > 3){
-  Serial.print("\n[DEBUG]: ");
-  Serial.println(string);
+  DEBUG_SERIAL.print("\n[DEBUG]: ");
+  DEBUG_SERIAL.println(string);
  }
 }
 
 void LOG::INFO(const char* string)
 {
  if (_level > 2){
-   Serial.print("\n[INFO]: ");
-   Serial.println(string);
+   DEBUG_SERIAL.print("\n[INFO]: ");
+   DEBUG_SERIAL.println(string);
  }
 }
 
 void LOG::WARNING(const char* string)
 {
  if (_level > 1){
-  Serial.print("\n[WARNING]: ");
-  Serial.println(string);
+  DEBUG_SERIAL.print("\n[WARNING]: ");
+  DEBUG_SERIAL.println(string);
  }
 }
 
 void LOG::CRITICAL(const char* string)
 {
  if (_level > 0){
-  Serial.print("\n[CRITICAL]: ");
-  Serial.println(string);
+  DEBUG_SERIAL.print("\n[CRITICAL]: ");
+  DEBUG_SERIAL.println(string);
  }
 }

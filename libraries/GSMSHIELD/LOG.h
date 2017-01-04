@@ -8,6 +8,12 @@
 #ifndef LOG_h
 #define LOG_h
 #include "Arduino.h"
+#if 0
+#include <SendOnlySoftwareSerial.h>
+extern SendOnlySoftwareSerial DEBUG_SERIAL;
+#else
+	#define DEBUG_SERIAL Serial
+#endif
 
 class LOG
 {

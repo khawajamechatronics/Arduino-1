@@ -16,7 +16,7 @@
 	  {
           r=nSerialStream->read();
 		  //if(debug)
-			//Serial.print(r);
+			//DEBUG_SERIAL.print(r);
           return r;
         }
       }

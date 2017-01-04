@@ -27,7 +27,7 @@ an example of usage:
 char SMSGSM::SendSMS(char *number_str, char *message_str) 
 {
   if(strlen(message_str)>159)
-	Serial.println(F("Don't send message longer than 160 characters"));
+	DEBUG_SERIAL.println(F("Don't send message longer than 160 characters"));
   char ret_val = -1;
   byte i;
   char end[2];
@@ -47,13 +47,13 @@ char SMSGSM::SendSMS(char *number_str, char *message_str)
     gsm.SimpleWriteln("\"");
     
 	#ifdef DEBUG_ON
-		Serial.println("DEBUG:SMS TEST");
+		DEBUG_SERIAL.println("DEBUG:SMS TEST");
 	#endif
     // 1000 msec. for initial comm tmout
     // 50 msec. for inter character timeout
     if (RX_FINISHED_STR_RECV == gsm.WaitResp(1000, 500, ">")) {
 		#ifdef DEBUG_ON
-			Serial.println("DEBUG:>");
+			DEBUG_SERIAL.println("DEBUG:>");
 		#endif
       // send SMS text
       gsm.SimpleWrite(message_str); 
@@ -354,8 +354,8 @@ char SMSGSM::GetSMS(byte position, char *phone_number, char *timestamp,char *SMS
 
       // extract phone number string
       // ---------------------------
-	Serial.println("DEBUG:SMS getSMS");
-	Serial.println((char *)&gsm.comm_buf);
+	DEBUG_SERIAL.println("DEBUG:SMS getSMS");
+	DEBUG_SERIAL.println((char *)&gsm.comm_buf);
 	// +CMGR: "REC READ","+972545919886","","16/07/26,15:31:59+12"
 
     p_char = strchr((char *)(gsm.comm_buf),',');
@@ -363,7 +363,7 @@ char SMSGSM::GetSMS(byte position, char *phone_number, char *timestamp,char *SMS
 		strcpy(phone_number,"phone?");
 	else
 	{
-	//	 Serial.println(p_char);
+	//	 DEBUG_SERIAL.println(p_char);
 			p_char1 = p_char+2; // we are on the first phone number character
 			p_char = strchr((char *)(p_char1),'"');
 			if (p_char == NULL)
@@ -371,10 +371,10 @@ char SMSGSM::GetSMS(byte position, char *phone_number, char *timestamp,char *SMS
 			else
 			{
 				*p_char = 0; // end of string
-				Serial.println(p_char1);
+				DEBUG_SERIAL.println(p_char1);
 				strcpy(phone_number, (char *)(p_char1));
 			//	memcpy(phone_number,p_char1,strlen(p_char1)+1);
-				Serial.println(phone_number);
+				DEBUG_SERIAL.println(phone_number);
 			}		  
 	}
   	  // extract timestamp
@@ -384,7 +384,7 @@ char SMSGSM::GetSMS(byte position, char *phone_number, char *timestamp,char *SMS
 	  p_char = strchr(p_char1,'"');  // end of timestamp
       if (p_char != NULL) {
         *p_char = 0; // end of string
-		Serial.println(p_char1);
+		DEBUG_SERIAL.println(p_char1);
         strcpy(timestamp, p_char1);
 	  }
 

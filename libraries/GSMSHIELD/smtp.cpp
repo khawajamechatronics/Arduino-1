@@ -40,7 +40,7 @@ bool writewithtimeout(char *buf,const char *response,unsigned long start,unsigne
 	bool success = false;
 	byte status;
 #ifdef SMTP_DEBUG_ON
-	Serial.println(buf);
+	DEBUG_SERIAL.println(buf);
 #endif
 	gsm.SimpleWrite(buf);
 	// 1 sec. for initial comm tmout
@@ -69,8 +69,8 @@ bool SMTPGSM::SmtpSetServer(char *server, int port)
 	//Port = port;
 	sprintf(printbuf,"AT+SMTPSRV=\"%s\",%d\r\n",server,port);
 #ifdef DEBUG_ON
-	Serial.println("DEBUG:SMTP SETSERV");
-	Serial.println(printbuf);
+	DEBUG_SERIAL.println("DEBUG:SMTP SETSERV");
+	DEBUG_SERIAL.println(printbuf);
 #endif
 	return writewithtimeout(printbuf,OK,4000,150);
 }
@@ -81,8 +81,8 @@ bool SMTPGSM::SmtpSetLogin(char *login_str,char *password)
 	//pPassword = password;
 	sprintf(printbuf,"AT+SMTPAUTH=1,\"%s\",\"%s\"\r",login_str,password);
 #ifdef DEBUG_ON
-	Serial.println("DEBUG:SMTP SETLOGIN");
-	Serial.println(printbuf);
+	DEBUG_SERIAL.println("DEBUG:SMTP SETLOGIN");
+	DEBUG_SERIAL.println(printbuf);
 #endif
 	return writewithtimeout(printbuf,OK,1000,150);
 }
@@ -93,8 +93,8 @@ bool SMTPGSM::SmtpSetSender(char *address,char *name)
 	bool success = false;
 	sprintf(printbuf,"AT+SMTPFROM=\"%s\",\"%s\"\r",address,name);
 #ifdef DEBUG_ON
-	Serial.println("DEBUG:SMTP SETSENDER");
-	Serial.println(printbuf);
+	DEBUG_SERIAL.println("DEBUG:SMTP SETSENDER");
+	DEBUG_SERIAL.println(printbuf);
 #endif
 	return writewithtimeout(printbuf,OK,1000,150);
 }
@@ -123,8 +123,8 @@ bool SMTPGSM::SmtpSetRecipient(enum eSMTPRCPT type, int index, char *address,cha
 	bool success = false;
 	sprintf(printbuf,"AT+SMTPRCPT=%d,%d,\"%s\",\"%s\"\r",type,index,address,name);
 #ifdef DEBUG_ON
-	Serial.println("DEBUG:SMTP SETRCPT");
-	Serial.println(printbuf);
+	DEBUG_SERIAL.println("DEBUG:SMTP SETRCPT");
+	DEBUG_SERIAL.println(printbuf);
 #endif
 	return writewithtimeout(printbuf,OK,1000,150);
 }
@@ -135,8 +135,8 @@ bool SMTPGSM::SmtpSendBody(char *body)
 	if (writewithtimeout("AT+SMTPBODY\r",">",1000,150))
 	{
 #ifdef DEBUG_ON
-		Serial.println("DEBUG:SMTP SETBODY");
-		Serial.println(body);
+		DEBUG_SERIAL.println("DEBUG:SMTP SETBODY");
+		DEBUG_SERIAL.println(body);
 #endif
 		gsm.SimpleWrite(body);
 		sprintf(printbuf,"%c",26);
@@ -146,7 +146,7 @@ bool SMTPGSM::SmtpSendBody(char *body)
 			success = writewithtimeout("AT+SMTPSEND\r","+SMTPSEND: 1",1000,timeout*1000);	
 		}
 #ifdef SMTP_DEBUG_ON
-  		Serial.println((char *)gsm.comm_buf);	
+  		DEBUG_SERIAL.println((char *)gsm.comm_buf);	
 #endif
 	}
 	return success;	
@@ -157,8 +157,8 @@ bool SMTPGSM::SmtpTimeout(int to)
 	timeout = (unsigned long)to;
 	sprintf(printbuf,"AT+EMAILTO=%d\r",to);
 #ifdef DEBUG_ON
-	Serial.println("DEBUG:SMTP SETINIT");
-	Serial.println(printbuf);
+	DEBUG_SERIAL.println("DEBUG:SMTP SETINIT");
+	DEBUG_SERIAL.println(printbuf);
 #endif
 	return writewithtimeout(printbuf,OK,1000,150);
 }
@@ -173,8 +173,8 @@ bool SMTPGSM::SmtpOpenGprs(int CID,char *apn)
 		delay(2000);
 		sprintf(printbuf,"AT+SAPBR=3,%d,\"APN\",\"%s\"\r",cid,apn);
 #ifdef DEBUG_ON
-		Serial.println("DEBUG:SMTP SETOPENGPRS");
-		Serial.println(printbuf);
+		DEBUG_SERIAL.println("DEBUG:SMTP SETOPENGPRS");
+		DEBUG_SERIAL.println(printbuf);
 #endif
 		if (writewithtimeout(printbuf,OK,1000,150))
 		{
@@ -208,8 +208,8 @@ bool SMTPGSM::SmtpSetSubject(char *sj)
 	int i;
 	sprintf(printbuf,"AT+SMTPSUB=\"%s\"\r",sj);
 #ifdef DEBUG_ON
-	Serial.println("DEBUG:SMTP SETSUB");
-	Serial.println(printbuf);
+	DEBUG_SERIAL.println("DEBUG:SMTP SETSUB");
+	DEBUG_SERIAL.println(printbuf);
 #endif
 	success= writewithtimeout(printbuf,OK,1000,150);
 	return success;
@@ -221,7 +221,7 @@ bool SMTPGSM::SmtpSetSubject(char *sj)
 int SMTPGSM::SmtpGetBodySize()
 {
 	char *ch;
-	Serial.println("bodysize");
+	DEBUG_SERIAL.println("bodysize");
 	if (writewithtimeout("AT+SMTPBODY=?\r",OK,5000,150))
 	{
 		ch = strstr((char *)gsm.comm_buf, "+SMTPBODY:");
@@ -266,7 +266,7 @@ bool SMTPGSM::SmtpGprsIsOpen(int CID)
 bool SMTPGSM::SmtpSetClock(char *s)
 {
 	sprintf(printbuf,"AT+CCLK=\"%s\"\r",s);	
-	Serial.println(printbuf);
+	DEBUG_SERIAL.println(printbuf);
 	return writewithtimeout(printbuf,OK,1000,150);
 }
 
@@ -274,7 +274,7 @@ char smsTime[30];
 char *SMTPGSM::SmtpGetClock()
 {
 	sprintf(printbuf,"AT+CCLK?\r");	
-	Serial.println(printbuf);	
+	DEBUG_SERIAL.println(printbuf);	
 	if (writewithtimeout(printbuf,OK,1000,150))
 	{
 		// scan up to CCLK:, replace \r by 0

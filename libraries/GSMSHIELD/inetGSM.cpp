@@ -22,7 +22,7 @@ int InetGSM::httpGET(const char* server, int port, const char* path, char* resul
   while(n_of_at<3){
 	  if(!connectTCP(server, port)){
 	  	#ifdef DEBUG_ON
-			Serial.println("DB:NOT CONN");
+			DEBUG_SERIAL.println("DB:NOT CONN");
 		#endif	
 	    	n_of_at++;
 	  }
@@ -55,7 +55,7 @@ int InetGSM::httpGET(const char* server, int port, const char* path, char* resul
   
  //delay(2000);
   	#ifdef DEBUG_ON
-		Serial.println("DB:SENT");
+		DEBUG_SERIAL.println("DB:SENT");
 	#endif	
 #if 0
   int res= gsm.read(result, resultlength);
@@ -105,7 +105,7 @@ int InetGSM::httpPOST(const char* server, int port, const char* path, const char
   while(n_of_at<3){
 	  if(!connectTCP(server, port)){
 	  	#ifdef DEBUG_ON
-			Serial.println("DB:NOT CONN");
+			DEBUG_SERIAL.println("DB:NOT CONN");
 		#endif	
 	    	n_of_at++;
 	  }
@@ -143,7 +143,7 @@ int InetGSM::httpPOST(const char* server, int port, const char* path, const char
 
  delay(50);
 	#ifdef DEBUG_ON
-		Serial.println("DB:SENT");
+		DEBUG_SERIAL.println("DB:SENT");
 	#endif	
 
   int res= gsm.read(result, resultlength);
@@ -162,7 +162,7 @@ int InetGSM::openmail(char* server, char* loginbase64, char* passbase64, char* f
   while(n_of_at<3){
 	  if(!connectTCP(server, 25)){
 	  	#ifdef DEBUG_ON
-			Serial.println("DB:NOT CONN");
+			DEBUG_SERIAL.println("DB:NOT CONN");
 		#endif	
 	    	n_of_at++;
 	  }
@@ -329,7 +329,7 @@ int InetGSM::attachGPRS(char* domain, char* dom1, char* dom2)
   gsm.SimpleWriteln("AT+CIFSR");
   if(gsm.WaitResp(5000, 50, "ERROR")!=RX_FINISHED_STR_RECV){
   	#ifdef DEBUG_ON
-		Serial.println("DB:ALREADY HAVE AN IP");
+		DEBUG_SERIAL.println("DB:ALREADY HAVE AN IP");
 	#endif
 	  gsm.SimpleWriteln("AT+CIPCLOSE");
 	gsm.WaitResp(5000, 50, "ERROR");
@@ -341,7 +341,7 @@ int InetGSM::attachGPRS(char* domain, char* dom1, char* dom2)
   else{
 
 	#ifdef DEBUG_ON
-		Serial.println("DB:STARTING NEW CONNECTION");
+		DEBUG_SERIAL.println("DB:STARTING NEW CONNECTION");
 	#endif
   
   gsm.SimpleWriteln("AT+CIPSHUT");
@@ -356,7 +356,7 @@ int InetGSM::attachGPRS(char* domain, char* dom1, char* dom2)
 	break;
   }
 	#ifdef DEBUG_ON
-		Serial.println("DB:SHUTTED OK");
+		DEBUG_SERIAL.println("DB:SHUTTED OK");
 	#endif
 	 delay(1000);
 	 
@@ -379,7 +379,7 @@ int InetGSM::attachGPRS(char* domain, char* dom1, char* dom2)
 	break;
   }
 	#ifdef DEBUG_ON
-		Serial.println("DB:APN OK");
+		DEBUG_SERIAL.println("DB:APN OK");
 	#endif
 	 delay(5000);
 	  
@@ -394,7 +394,7 @@ int InetGSM::attachGPRS(char* domain, char* dom1, char* dom2)
 	break;
   }
   	#ifdef DEBUG_ON
-		Serial.println("DB:CONNECTION OK");
+		DEBUG_SERIAL.println("DB:CONNECTION OK");
 	#endif
 
   delay(1000);
@@ -403,13 +403,13 @@ int InetGSM::attachGPRS(char* domain, char* dom1, char* dom2)
  gsm.SimpleWriteln("AT+CIFSR");
  if(gsm.WaitResp(5000, 50, "ERROR")!=RX_FINISHED_STR_RECV){
 	#ifdef DEBUG_ON
-		Serial.println("DB:ASSIGNED AN IP");
+		DEBUG_SERIAL.println("DB:ASSIGNED AN IP");
 	#endif
 	gsm.setStatus(gsm.ATTACHED);
 	return 1;
 }
 	#ifdef DEBUG_ON
-		Serial.println("DB:NO IP AFTER CONNECTION");
+		DEBUG_SERIAL.println("DB:NO IP AFTER CONNECTION");
 	#endif
  return 0;
  }
@@ -468,7 +468,7 @@ int InetGSM::connectTCP(const char* server, int port)
 	break;
   }
   #ifdef DEBUG_ON
-	Serial.println("DB:RECVD CMD");
+	DEBUG_SERIAL.println("DB:RECVD CMD");
   #endif	
   if (!gsm.IsStringReceived("CONNECT OK")) {
     switch(gsm.WaitResp(15000, 200, "OK")) {
@@ -482,7 +482,7 @@ int InetGSM::connectTCP(const char* server, int port)
   }
 
   #ifdef DEBUG_ON
-	Serial.println("DB:OK TCP");
+	DEBUG_SERIAL.println("DB:OK TCP");
   #endif
 
   delay(3000);
@@ -497,7 +497,7 @@ int InetGSM::connectTCP(const char* server, int port)
   }
 
   #ifdef DEBUG_ON
-	Serial.println("DB:>");
+	DEBUG_SERIAL.println("DB:>");
   #endif
   delay(4000);
   return 1;
@@ -521,7 +521,7 @@ int InetGSM::connectUDP(const char* server, int port)
 	break;
   }
   #ifdef DEBUG_ON
-	Serial.println("DB:RECVD CMD");
+	DEBUG_SERIAL.println("DB:RECVD CMD");
   #endif	
   if (!gsm.IsStringReceived("CONNECT OK")) {
     switch(gsm.WaitResp(15000, 200, "OK")) {
@@ -535,7 +535,7 @@ int InetGSM::connectUDP(const char* server, int port)
   }
 
   #ifdef DEBUG_ON
-	Serial.println("DB:OK UDP");
+	DEBUG_SERIAL.println("DB:OK UDP");
   #endif
 
 #if 0   // let app do encapsulating
@@ -552,7 +552,7 @@ int InetGSM::connectUDP(const char* server, int port)
   }
 
   #ifdef DEBUG_ON
-	Serial.println("DB:>");
+	DEBUG_SERIAL.println("DB:>");
   #endif
   delay(4000);
 #else
@@ -658,19 +658,17 @@ bool InetGSM::OpenGprs(int CID,char *apn,int responsetime)
 	{
 		delay(2000);
 		sprintf(printbuf,"AT+SAPBR=3,%d,\"APN\",\"%s\"\r",cid,apn);
-//#ifdef DEBUG_ON
-#if 1
-		Serial.println("DEBUG:Inet OPENGPRS");
-		Serial.println(printbuf);
+#ifdef DEBUG_ON
+		DEBUG_SERIAL.println("DEBUG:Inet OPENGPRS");
+		DEBUG_SERIAL.println(printbuf);
 #endif
 		if (writewithtimeout(printbuf,OK,10000,150))
 		{
 			delay(2000);
 			sprintf(printbuf,"AT+SAPBR=1,%d\r",cid);
-//#ifdef DEBUG_ON
-#if 1
-			Serial.println(printbuf);
-			Serial.println(responsetime);
+#ifdef DEBUG_ON
+			DEBUG_SERIAL.println(printbuf);
+			DEBUG_SERIAL.println(responsetime);
 #endif
 			success = (writewithtimeout(printbuf,OK,responsetime*1000,responsetime*1000));
 		}
@@ -682,8 +680,8 @@ bool InetGSM::CloseGprs(int CID)
 {
 	sprintf(printbuf,"AT+SAPBR=0,%d\r",CID);
 #ifdef DEBUG_ON
-	Serial.println("DEBUG:Inet CLOSEGPRS");
-	Serial.println(printbuf);
+	DEBUG_SERIAL.println("DEBUG:Inet CLOSEGPRS");
+	DEBUG_SERIAL.println(printbuf);
 #endif
 	return writewithtimeout(printbuf,OK,1000,150);
 }
@@ -693,15 +691,15 @@ char *InetGSM::GetGprsIP(int CID)
 	char *cs,*ce;
 	sprintf(printbuf,"AT+SAPBR=2,%d\r",CID);
 #ifdef DEBUG_ON
-	Serial.println("DEBUG:Inet GetGPRSIP");
-	Serial.println(printbuf);
+	DEBUG_SERIAL.println("DEBUG:Inet GetGPRSIP");
+	DEBUG_SERIAL.println(printbuf);
 #endif
 	if  (writewithtimeout(printbuf,OK,1000,150))
 	{
 		// reply like this +SAPBR: 1,1,"10.173.225.36"
 #ifdef DEBUG_ON
-		Serial.println("DEBUG:Inet reply");
-		Serial.println((char *)gsm.comm_buf);
+		DEBUG_SERIAL.println("DEBUG:Inet reply");
+		DEBUG_SERIAL.println((char *)gsm.comm_buf);
 #endif
 		cs = strchr((char *)gsm.comm_buf,'\"');
 		ce = strchr(++cs,'\"');

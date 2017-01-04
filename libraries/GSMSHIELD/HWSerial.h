@@ -1,4 +1,4 @@
-//#define MEGA
+#define MEGA
 
 #ifndef _HWSERIAL_H_
 #define _HWSERIAL_H_
@@ -7,7 +7,7 @@
 #include "Streaming.h"
 #include <inttypes.h>
 
-
+#define HW_SERIAL Serial1
 class HWSerial
 {
  #ifdef MEGA
