@@ -11,9 +11,9 @@ void setup() {
   pinMode(GREEN_LED_PIN,OUTPUT);
   pinMode(BLUE_LED_PIN,OUTPUT);
   pinMode(RED_LED_PIN,OUTPUT);
-//  digitalWrite(GREEN_LED_PIN,HIGH);
-  digitalWrite(BLUE_LED_PIN,HIGH);
-//  digitalWrite(RED_LED_PIN,HIGH);
+ // digitalWrite(GREEN_LED_PIN,HIGH);
+//  digitalWrite(BLUE_LED_PIN,HIGH);
+  digitalWrite(RED_LED_PIN,HIGH);
 }
 
 void loop() {

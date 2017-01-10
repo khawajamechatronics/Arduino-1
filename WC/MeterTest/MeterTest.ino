@@ -110,8 +110,8 @@ void loop() {
   {
     alarmflag = true;
     prevsampletime = millis();
-    Meter0Count(15);
-    Meter1Count(16);
+ //   Meter0Count(15);
+ //   Meter1Count(16);
   }
   if (alarmflag)
   {
@@ -134,7 +134,7 @@ void loop() {
         RGBActivate(BLUE_LED,LED_OFF);
         RGBActivate(GREEN_LED,LED_ON);
       }
-      else if (wf[0] == FLOWING && wf[1] == FLOWING)  // both report flowing
+      else if (wf[0] == FLOWING || wf[1] == FLOWING)  // either report flowing
       {
         RGBActivate(RED_LED,LED_OFF);
         RGBActivate(BLUE_LED,LED_ON);

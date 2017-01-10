@@ -53,7 +53,7 @@ void TapClose()
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(11500);
 // initialize relay pins and turn power off to output 
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
@@ -65,8 +65,23 @@ void setup() {
 #endif
 }
 void loop() {
+#if 0
   TapOpen();
   delay(10000);
   TapClose();
   delay(10000);
+#else
+  Serial.println("LL");
+  RelaySet(LOW,LOW);
+  delay(3000);
+  Serial.println("LH");
+  RelaySet(LOW,HIGH);
+  delay(3000);
+  Serial.println("HH");
+  RelaySet(HIGH,HIGH);
+  delay(3000);
+  Serial.println("HL");
+  RelaySet(HIGH,LOW);
+  delay(3000);  
+#endif
 }
