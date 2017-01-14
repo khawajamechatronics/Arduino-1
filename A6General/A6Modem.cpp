@@ -6,13 +6,14 @@
 #include "A6Modem.h"
 #include <TimerOne.h>
 
+void HW_SERIAL_EVENT();
 bool availableCID[] = {true,true,true,true,true,true,true};
 bool GPRSA6Device::begin(long baudrate)
 {
   bool rc = false;
   HW_SERIAL.begin(A6_BAUDRATE);
   inlevel = outlevel = 0;
-  inSetup = true;
+  //inSetup = true;
   enableDebug = false;
   HWReset();
   if (waitresp("+CREG: 1\r\n",20000))
@@ -66,8 +67,9 @@ bool GPRSA6Device::waitresp(char const *response_string,int32_t timeout)
   uint32_t TimeOut = millis() + timeout;
   while (TimeOut > millis() && lengthtotest>0)
   {
-    if (inSetup && HW_SERIAL.available())
-      push(HW_SERIAL.read());
+//    if (inSetup && HW_SERIAL.available())
+  //    push(HW_SERIAL.read());
+    HW_SERIAL_EVENT();
     // get next char from buffer, if no match discard, if match decrement lengthtotest & get next character
     char c = pop();
     if (c != -1)
@@ -104,8 +106,9 @@ bool GPRSA6Device::GetLineWithPrefix(char const *px,char *outbuf, int bufsize,in
   }
   while (TimeOut > millis() && !alldone)
   {
-    if (inSetup && HW_SERIAL.available())
-      push(HW_SERIAL.read());
+//    if (inSetup && HW_SERIAL.available())
+//      push(HW_SERIAL.read());
+    HW_SERIAL_EVENT();
     // get next char from buffer, if no match discard, if match decrement lengthtotest & get next character
     char c = pop();
     if (c!= -1)

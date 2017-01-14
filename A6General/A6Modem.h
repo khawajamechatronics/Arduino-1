@@ -23,12 +23,12 @@ class GPRSA6Device
     void DebugWrite(char) __attribute__((weak));
     void DebugWrite(char*) __attribute__((weak));
     void RXFlush();  // clear all data in input buffer
-    bool inSetup;
+ //   bool inSetup;
     bool enableDebug;
     int getcid();           // get one of the 1-7 cid's
     void freecid(int);      // give it back
   private:
-    char comm_buf[COMM_BUF_LEN];  // communication buffer +1 for 0x00 termination
+    char comm_buf[200];  // communication buffer +1 for 0x00 termination
     int inlevel, outlevel;        // data in comm_buf
 };
 #endif

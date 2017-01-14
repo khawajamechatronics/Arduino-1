@@ -4,17 +4,17 @@
 
 GPRSA6 gsm;
 GPRSA6::GPRSA6(){
-  cid = -1;
+  cid = 1;
   CIPstatus = IP_STATUS_UNKNOWN;
 };
 GPRSA6::~GPRSA6(){};
 
 static char *statusnames[] = {"IP INITIAL","IP START","IP CONFIG","IP IND","IP GPRSACT","IP STATUS","TCP/UDP CONNECTING","IP CLOSE","CONNECT OK"};
 char tempbuf[100];
+
 void HW_SERIAL_EVENT() {
-  while (HW_SERIAL.available()) {
+  while (HW_SERIAL.available())
     gsm.push(HW_SERIAL.read());
-  }
 }
 
 bool GPRSA6::getIMEI(char* imei)
@@ -26,6 +26,7 @@ bool GPRSA6::getIMEI(char* imei)
   waitresp("OK\r\n",500);
   return rc;
 }
+
 bool GPRSA6::getCIMI(char* cimi)
 {
   bool rc;
@@ -91,7 +92,7 @@ char *GPRSA6::getCIPstatusString()
 bool GPRSA6::startIP(char *apn,char*user,char *pwd)  // apn, username, password
 {
   bool rc = false;
-  cid = gsm.getcid();
+  cid = 1; //gsm.getcid();
   DebugWrite("CID");
   DebugWrite(cid);
   gsm.RXFlush();
@@ -149,7 +150,7 @@ bool GPRSA6::stopIP()
     DebugWrite("\r\n5:");
     DebugWrite(getCIPstatusString());
     gsm.RXFlush();
-    gsm.freecid(cid);
+  //  gsm.freecid(cid);
     rc = true;
   }
   DebugWrite(getCIPstatusString());
@@ -223,6 +224,49 @@ bool GPRSA6::sendToServer(char*msg)
     {
       HW_SERIAL.print(msg);
       HW_SERIAL.write(0x1a);
+      waitresp("OK\r\n",1000);
+      rc = true;
+    }
+  }
+  return rc;
+}
+bool GPRSA6::sendToServer(char*msg,int length)
+{
+  bool rc = false;
+  getCIPstatus();
+  if (CIPstatus == CONNECT_OK)
+  {
+    HW_SERIAL.print("AT+CIPSEND=");
+    HW_SERIAL.print(length);
+    HW_SERIAL.print("\r");
+    if (waitresp(">",100))
+    {
+      HW_SERIAL.print(msg);
+      waitresp("OK\r\n",1000);
+      rc = true;
+    }
+  }
+  return rc;
+}
+
+bool GPRSA6::sendToServer(byte*msg,int length)
+{
+  bool rc = false;
+  char buff[10];
+  getCIPstatus();
+  if (CIPstatus == CONNECT_OK)
+  {
+    HW_SERIAL.print("AT+CIPSEND=");
+    HW_SERIAL.print(length);
+    HW_SERIAL.print("\r");
+    if (waitresp(">",100))
+    {
+      for (int i=0;i<length;i++)
+      {
+        sprintf(buff,"%02X,",msg[i]);
+        Serial.print(buff);
+        HW_SERIAL.write(msg[i]);
+      }
       waitresp("OK\r\n",1000);
       rc = true;
     }

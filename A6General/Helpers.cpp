@@ -8,6 +8,7 @@
  */
 #include <Arduino.h>
 #include "A6Modem.h"
+#include "A6MQTT.h"
 
 #define TRANSISTOR_CONTROL 7  // connect to base of transistor
 #define A6_RESET_TIME 50 // ms
@@ -39,4 +40,8 @@ void GPRSA6Device::DebugWrite(char *s)
     Serial.print(s);
 }
 #endif
+void A6_MQTT::AutoConnect()
+{
+  connect("a", 0, 0, "", "", 1, 0, 0, 0, "", "");  
+}
 
