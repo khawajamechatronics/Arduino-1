@@ -24,6 +24,11 @@ void GPRSA6Device::HWReset()
 }
 
 #if 1
+void GPRSA6Device::DebugWrite(uint16_t c)
+{
+  if (enableDebug)
+    Serial.print(c);
+}
 void GPRSA6Device::DebugWrite(int c)
 {
   if (enableDebug)
@@ -38,6 +43,11 @@ void GPRSA6Device::DebugWrite(char *s)
 {
   if (enableDebug)
     Serial.print(s);
+}
+void GPRSA6Device::DebugWrite(const __FlashStringHelper*s)
+{
+  if (enableDebug)
+    Serial.print(s);  
 }
 #endif
 void A6_MQTT::AutoConnect()

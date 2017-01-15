@@ -20,8 +20,10 @@ class GPRSA6Device
     // weak methods are helpers - implement only if you really want them
     void HWReset() __attribute__((weak));   // may be implemented by the caller 
     void DebugWrite(int) __attribute__((weak));
+    void DebugWrite(uint16_t) __attribute__((weak));
     void DebugWrite(char) __attribute__((weak));
     void DebugWrite(char*) __attribute__((weak));
+    void DebugWrite(const __FlashStringHelper*) __attribute__((weak));
     void RXFlush();  // clear all data in input buffer
  //   bool inSetup;
     bool enableDebug;

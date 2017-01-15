@@ -7,7 +7,7 @@
 #include <TimerOne.h>
 
 void HW_SERIAL_EVENT();
-bool availableCID[] = {true,true,true,true,true,true,true};
+//bool availableCID[] = {true,true,true,true,true,true,true};
 bool GPRSA6Device::begin(long baudrate)
 {
   bool rc = false;
@@ -163,6 +163,7 @@ void GPRSA6Device::RXFlush()
   inlevel = outlevel = 0;
 }
 
+#if 0
 int GPRSA6Device::getcid()
 {
   int cid = -1;
@@ -181,4 +182,5 @@ void GPRSA6Device::freecid(int cid)
   if (cid>=1 && cid<=7)
     availableCID[cid-1] = true;
 }
+#endif
 

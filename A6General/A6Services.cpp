@@ -10,6 +10,8 @@ GPRSA6::GPRSA6(){
 GPRSA6::~GPRSA6(){};
 
 static char *statusnames[] = {"IP INITIAL","IP START","IP CONFIG","IP IND","IP GPRSACT","IP STATUS","TCP/UDP CONNECTING","IP CLOSE","CONNECT OK"};
+//const char* const status_names[] PROGMEM = {"IP INITIAL","IP START","IP CONFIG","IP IND","IP GPRSACT","IP STATUS","TCP/UDP CONNECTING","IP CLOSE","CONNECT OK"};
+
 char tempbuf[100];
 
 void HW_SERIAL_EVENT() {
@@ -21,7 +23,7 @@ bool GPRSA6::getIMEI(char* imei)
 {
   bool rc;
   gsm.RXFlush();
-  HW_SERIAL.print("AT+EGMR=2,7\r");
+  HW_SERIAL.print(F("AT+EGMR=2,7\r"));
   rc = GetLineWithPrefix("+EGMR:",imei,20,500);
   waitresp("OK\r\n",500);
   return rc;
@@ -31,7 +33,7 @@ bool GPRSA6::getCIMI(char* cimi)
 {
   bool rc;
   gsm.RXFlush();
-  HW_SERIAL.print("AT+CIMI\r");
+  HW_SERIAL.print(F("AT+CIMI\r"));
   waitresp("\r\n",500);
   rc = GetLineWithPrefix(NULL,cimi,20,500);
   waitresp("OK\r\n",500);
@@ -41,7 +43,7 @@ bool GPRSA6::getRTC(char* rtc)
 {
   bool rc;
   gsm.RXFlush();
-  HW_SERIAL.print("AT+CCLK\r");
+  HW_SERIAL.print(F("AT+CCLK\r"));
   waitresp("\r\n",500);
   rc = GetLineWithPrefix("+CCLK:",rtc,30,500);
   waitresp("OK\r\n",500);
@@ -50,7 +52,7 @@ bool GPRSA6::getRTC(char* rtc)
 bool GPRSA6::setRTC(char* rtc)
 {
   gsm.RXFlush();
-  HW_SERIAL.print("AT+CCLK=\"");
+  HW_SERIAL.print(F("AT+CCLK=\""));
   HW_SERIAL.print(rtc);
   HW_SERIAL.print("\"\r");
   return waitresp("OK\r\n",500);
@@ -93,44 +95,42 @@ bool GPRSA6::startIP(char *apn,char*user,char *pwd)  // apn, username, password
 {
   bool rc = false;
   cid = 1; //gsm.getcid();
-  DebugWrite("CID");
-  DebugWrite(cid);
   gsm.RXFlush();
   if (CIPstatus != IP_INITIAL)
   {
-    HW_SERIAL.print("AT+CIPCLOSE\r");
+    HW_SERIAL.print(F("AT+CIPCLOSE\r"));
     waitresp("OK\r\n",2000);
   }
-  DebugWrite("\r\n2:");
-  DebugWrite(getCIPstatusString());
+//  DebugWrite("\r\n2:");
+//  DebugWrite(getCIPstatusString());
   gsm.RXFlush();
-  HW_SERIAL.print("AT+CGATT=1\r");
+  HW_SERIAL.print(F("AT+CGATT=1\r"));
   if (waitresp("OK\r\n",10000))
   {
-    DebugWrite("\r\n3:");
-    DebugWrite(getCIPstatusString());
+//    DebugWrite("\r\n3:");
+//    DebugWrite(getCIPstatusString());
     gsm.RXFlush();
     sprintf(tempbuf,"AT+CGDCONT=%d,\"IP\",\"%s\"\r",cid,apn);
     DebugWrite(tempbuf);
     HW_SERIAL.print(tempbuf);
     if (waitresp("OK\r\n",1000))
     {
-      DebugWrite("\r\n4:");
-      DebugWrite(getCIPstatusString());
+ //     DebugWrite("\r\n4:");
+//      DebugWrite(getCIPstatusString());
       gsm.RXFlush();
       sprintf(tempbuf,"AT+CGACT=1,%d\r",cid);
       HW_SERIAL.print(tempbuf);
       if (waitresp("OK\r\n",1000))
       {
-        DebugWrite("\r\n5:");
-        DebugWrite(getCIPstatusString());
+//        DebugWrite("\r\n5:");
+ //       DebugWrite(getCIPstatusString());
         gsm.RXFlush();
         rc = true;
       }
     }
   }
-  DebugWrite("\r\n6:");
-  DebugWrite(getCIPstatusString());
+//  DebugWrite("\r\n6:");
+//  DebugWrite(getCIPstatusString());
   gsm.RXFlush();
   return rc;
 }
@@ -147,13 +147,13 @@ bool GPRSA6::stopIP()
   HW_SERIAL.print(tempbuf);
   if (waitresp("OK\r\n",1000))
   {
-    DebugWrite("\r\n5:");
-    DebugWrite(getCIPstatusString());
+//    DebugWrite("\r\n5:");
+ //   DebugWrite(getCIPstatusString());
     gsm.RXFlush();
   //  gsm.freecid(cid);
     rc = true;
   }
-  DebugWrite(getCIPstatusString());
+//  DebugWrite(getCIPstatusString());
   return rc;
 }
 
@@ -161,7 +161,7 @@ GPRSA6::ePSstate GPRSA6::getPSstate()
 {
   ePSstate eps = PS_UNKNOWN;
   gsm.RXFlush();
-  HW_SERIAL.print("AT+CGATT?\r");  
+  HW_SERIAL.print(F("AT+CGATT?\r"));  
   if (GetLineWithPrefix("+CGATT:",tempbuf,50,1000))
   {
     if (*tempbuf == '0')
@@ -179,10 +179,10 @@ bool GPRSA6::setPSstate(GPRSA6::ePSstate eps)
   switch (eps)
   {
     case DETACHED:
-      HW_SERIAL.print("AT+CGATT=0\r");
+      HW_SERIAL.print(F("AT+CGATT=0\r"));
       break;
     case ATTACHED:
-      HW_SERIAL.print("AT+CGATT=1\r");
+      HW_SERIAL.print(F("AT+CGATT=1\r"));
       break;
   }
   return waitresp("OK\r\n",2000);
@@ -192,13 +192,14 @@ bool GPRSA6::getLocalIP(char *ip)
 {
   bool rc = false;
   gsm.RXFlush();
-  HW_SERIAL.print("AT+CIFSR\r");
+  HW_SERIAL.print(F("AT+CIFSR\r"));
   GetLineWithPrefix(NULL,ip,20,2000);
   return waitresp("OK\r\n",2000);
 }
 bool GPRSA6::connectTCPserver(char*path,int port)
 {
   bool rc = false;
+  CIPstatus = getCIPstatus();
   if (CIPstatus == IP_CLOSE || CIPstatus == IP_GPRSACT)
   {
     sprintf(tempbuf,"AT+CIPSTART=\"TCP\",\"%s\",%d\r",path,port);
@@ -206,7 +207,7 @@ bool GPRSA6::connectTCPserver(char*path,int port)
     HW_SERIAL.print(tempbuf);
     if (waitresp("CONNECT OK",10000))
     {
-//      DebugWrite(">>");
+      DebugWrite(">>");
       waitresp("OK\r\n",10000);
       rc = true;
     }
@@ -219,7 +220,7 @@ bool GPRSA6::sendToServer(char*msg)
   getCIPstatus();
   if (CIPstatus == CONNECT_OK)
   {
-    HW_SERIAL.print("AT+CIPSEND\r");
+    HW_SERIAL.print(F("AT+CIPSEND\r"));
     if (waitresp(">",100))
     {
       HW_SERIAL.print(msg);
@@ -236,7 +237,7 @@ bool GPRSA6::sendToServer(char*msg,int length)
   getCIPstatus();
   if (CIPstatus == CONNECT_OK)
   {
-    HW_SERIAL.print("AT+CIPSEND=");
+    HW_SERIAL.print(F("AT+CIPSEND="));
     HW_SERIAL.print(length);
     HW_SERIAL.print("\r");
     if (waitresp(">",100))
@@ -256,7 +257,7 @@ bool GPRSA6::sendToServer(byte*msg,int length)
   getCIPstatus();
   if (CIPstatus == CONNECT_OK)
   {
-    HW_SERIAL.print("AT+CIPSEND=");
+    HW_SERIAL.print(F("AT+CIPSEND="));
     HW_SERIAL.print(length);
     HW_SERIAL.print("\r");
     if (waitresp(">",100))
@@ -264,7 +265,7 @@ bool GPRSA6::sendToServer(byte*msg,int length)
       for (int i=0;i<length;i++)
       {
         sprintf(buff,"%02X,",msg[i]);
-        Serial.print(buff);
+        DebugWrite(buff);
         HW_SERIAL.write(msg[i]);
       }
       waitresp("OK\r\n",1000);
