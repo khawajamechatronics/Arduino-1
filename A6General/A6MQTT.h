@@ -109,6 +109,7 @@ class A6_MQTT
     volatile uint32_t index = 0;
     volatile uint32_t length = 0, lengthLocal = 0;
     bool connectedToServer;
+    bool waitingforConnack;
   //  volatile bool waitingForAck = false;
  //   char inputString[UART_BUFFER_LENGTH]; 
     A6_MQTT(unsigned long KeepAlive);
@@ -139,7 +140,7 @@ class A6_MQTT
     volatile unsigned long _KeepAliveTimeOut;
     enum eParseState ParseState;
     int modemMessageLength;
-    char modemmessage[MODEM_MESSAGE_LENGTH];
+    byte modemmessage[MODEM_MESSAGE_LENGTH];
     int mqttmsglength;
     char Topic[TOPIC_BUFFER_LENGTH];
     volatile int TopicLength = 0;

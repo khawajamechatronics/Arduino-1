@@ -19,7 +19,7 @@ class GPRSA6: public virtual GPRSA6Device
     bool startIP(char *);  // apn
     bool startIP(char *,char*,char *);  // apn, username, password
     ePSstate getPSstate();
-    bool doParsing;
+  //  bool doParsing;
     bool setPSstate(ePSstate);
     bool stopIP();
     bool getLocalIP(char *);

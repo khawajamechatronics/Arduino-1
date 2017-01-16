@@ -50,8 +50,4 @@ void GPRSA6Device::DebugWrite(const __FlashStringHelper*s)
     Serial.print(s);  
 }
 #endif
-void A6_MQTT::AutoConnect()
-{
-  connect("a", 0, 0, "", "", 1, 0, 0, 0, "", "");  
-}
 

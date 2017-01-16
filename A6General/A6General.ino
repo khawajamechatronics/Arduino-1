@@ -20,7 +20,7 @@ void setup() {
   {
     Serial.println("GSM up");
     gsm.getCIPstatus();
-    gsm.enableDebug = true;
+    gsm.enableDebug = false;
 #if 0
     if (gsm.getIMEI(buff))
     {
@@ -86,8 +86,8 @@ void setup() {
       {
         Serial.println("TCP up");
         MQTT.AutoConnect();
-      //  gsm.sendToServer(msg);
-        nextpublish = millis()+PUB_DELTA;
+     //   gsm.sendToServer(msg);
+    //    nextpublish = millis()+PUB_DELTA;
       }
       else
         Serial.println("TCP down");
@@ -101,25 +101,27 @@ void setup() {
     Serial.println("GSM down");
 }
 void loop() {
-  if (gsm.doParsing)
+  if (MQTT.connectedToServer || MQTT.waitingforConnack)
   {
     if (MQTT._PingNextMillis < millis())
       MQTT.ping();
+#if 1
     if (nextpublish < millis())
     {
       nextpublish = millis()+PUB_DELTA;
       sprintf(buff,"%lu",millis());
       MQTT.publish("/elapsed",buff);
     }
-    if (millis() > 60000 && !unsubscribed)
-    {
-       unsubscribed = MQTT.unsubscribe(1234,"/+");
-  //     while (true);
-    }
+#endif
     MQTT.serialparse();
   }
   if (Serial.available())
     gsm.ModemWrite(Serial.read());
+}
+
+void A6_MQTT::AutoConnect()
+{
+  MQTT.waitingforConnack = connect("a", 0, 0, "", "", 1, 0, 0, 0, "", "");
 }
 
 void A6_MQTT::OnConnect(enum eConnectRC rc)
@@ -129,7 +131,6 @@ void A6_MQTT::OnConnect(enum eConnectRC rc)
     case MQTT.CONNECT_RC_ACCEPTED:
       Serial.println("Connected");
       MQTT._PingNextMillis = millis() + (MQTT._KeepAliveTimeOut*1000) - 2000;
-      MQTT.connectedToServer = true;
       MQTT.subscribe(1234,"/+",0);
   //    MQTT.disconnect();
      break;
@@ -150,7 +151,7 @@ void A6_MQTT::OnSubscribe(uint16_t pi)
 
 void A6_MQTT::OnMessage(char *topic,char *message)
 {
-  Serial.print(F("Topic: "));Serial.println(topic);
-  Serial.print(F("Message: "));Serial.println(message);
+  Serial.print("Topic: ");Serial.println(topic);
+  Serial.print("Message: ");Serial.println(message);
 }
 
