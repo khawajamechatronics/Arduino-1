@@ -51,7 +51,9 @@
 
 enum eParseState {GETMM,GETLENGTH,GETDATA};
 struct sFixedHeader {
-  byte rsv:4;
+  byte retain:1;
+  byte qos:2;
+  byte dup:1;
   byte controlpackettype:4;
   byte rl;
 };
@@ -96,6 +98,7 @@ class A6_MQTT
 {
   public:
       enum eConnectRC {CONNECT_RC_ACCEPTED, CONNECT_RC_REFUSED_PROTOCOL,CONNECT_RC_REFUSED_IDENTIFIER};
+      enum eQOS {QOS_0,QOS_1,QOS_2};
  //   volatile bool TCP_Flag = false;
  //   volatile char GSM_ReplyFlag;
  //   char reply[20];
@@ -115,6 +118,8 @@ class A6_MQTT
     A6_MQTT(unsigned long KeepAlive);
     bool connect(char *ClientIdentifier, char UserNameFlag, char PasswordFlag, char *UserName, char *Password, char CleanSession, char WillFlag, char WillQoS, char WillRetain, char *WillTopic, char *WillMessage);
     bool publish(char *Topic, char *Message); // QOS 0 no dup no retain
+    bool publish(char *Topic, char *Message, bool , bool ); // dup,retain,qos=0
+    bool publish(char *Topic, char *Message, bool , bool, eQOS,uint16_t packetid ); // dup,retain,qos
     bool subscribe(unsigned int MessageID, char *SubTopic, char SubQoS);
     bool unsubscribe(unsigned int MessageID, char *SubTopic);
     bool disconnect(void);
@@ -125,8 +130,8 @@ class A6_MQTT
     void AutoConnect(void);
     void OnConnect(eConnectRC) __attribute__((weak));
     void OnSubscribe(uint16_t)  __attribute__((weak));
-    void OnMessage(char *Topic,char *Message);
-
+    void OnMessage(char *Topic,char *Message,bool,bool,eQOS)   __attribute__((weak));
+    void OnPubAck(uint16_t messageid) __attribute__((weak));
 
     void serialparse();
     void mqttparse();

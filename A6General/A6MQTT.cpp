@@ -36,8 +36,9 @@ A6_MQTT::A6_MQTT(unsigned long KeepAlive)
   waitingforConnack = false;  // send connection request and waiting for ACK
 }
 
-static byte mqttbuffer[50];  // build up message here
-
+#define MQTT_BUFFER_SIZE 50
+static byte mqttbuffer[MQTT_BUFFER_SIZE];  // build up message here
+static char line[30];
 uint16_t bswap(uint16_t w)
 {
   return ((w&0xff)*256) + (w/256);
@@ -57,7 +58,9 @@ bool A6_MQTT::connect(char *ClientIdentifier, char UserNameFlag, char PasswordFl
     connsize+= sizeof(uint16_t) + strlen(WillTopic) + sizeof(uint16_t) + strlen(WillMessage);
   struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
   int bindex = 0;
-  pFH->rsv = 0;
+  pFH->dup = 0;
+  pFH->qos = 0;
+  pFH->retain = 0;
   pFH->controlpackettype = MQ_CONNECT;
   pFH->rl = connsize-sizeof(struct sFixedHeader); // do not encode in data
   bindex += sizeof(struct sFixedHeader);
@@ -111,7 +114,9 @@ bool A6_MQTT::subscribe(unsigned int MessageID, char *SubTopic, char SubQoS)
     int connsize = sizeof(struct sFixedHeader)+sizeof(struct sSubscribeVariableHeader)+sizeof(uint16_t)+strlen(SubTopic) + 1; // includes QOS byte
     struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
     int bindex = 0;
-    pFH->rsv = 0x02;   // see documentation
+    pFH->dup = 0;
+    pFH->qos = 1;
+    pFH->retain = 0;
     pFH->controlpackettype = MQ_SUBSCRIBE;
     pFH->rl = connsize-sizeof(struct sFixedHeader); // do not encode in data
     bindex += sizeof(struct sFixedHeader);
@@ -176,7 +181,10 @@ void A6_MQTT::serialparse()
         }
         break;
       case GETDATA:
-        modemmessage[modemMessageLength++] = c;
+        if (mqttmsglength <= MQTT_BUFFER_SIZE)   // only copy data if there is space
+          modemmessage[modemMessageLength++] = c;
+        else
+          modemMessageLength++;   // else just discard
         if (modemMessageLength == mqttmsglength)
         {
           ParseState = GETMM;
@@ -230,7 +238,7 @@ void A6_MQTT::mqttparse()
       Topic[slength] = 0;  // add end marker
       memcpy(Message,pVS->string+slength,pFH->rl-slength-sizeof(int16_t));
       Message[pFH->rl-slength-sizeof(int16_t)] = 0;
-      OnMessage(Topic,Message);
+      OnMessage(Topic,Message,pFH->dup,pFH->retain,pFH->qos ); // dup & retain flags, QOS
       break;
     case MQ_PINGRESP:
       gsm.DebugWrite(F("ping response\r\n"));
@@ -238,9 +246,7 @@ void A6_MQTT::mqttparse()
       break;
     case MQ_PUBACK:
       pW = (uint16_t *)&modemmessage[2];
-      gsm.DebugWrite("puback: ");
-      gsm.DebugWrite(*pW);
-      gsm.DebugWrite("\r\n");
+      OnPubAck(bswap(*pW));
       break;
     case MQ_UNSUBACK:
       pW = (uint16_t *)&modemmessage[2];
@@ -258,7 +264,9 @@ bool A6_MQTT::ping()
   {
     struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
     pFH->controlpackettype = MQ_PINGREQ;
-    pFH->rsv = 0;
+    pFH->dup = 0;
+    pFH->qos = 0;
+    pFH->retain = 0;
     pFH->rl = 0;
     // stop spiunning in ping loop
     _PingNextMillis = millis() + (_KeepAliveTimeOut*1000) - 2000;
@@ -270,22 +278,44 @@ bool A6_MQTT::ping()
 
 bool A6_MQTT::publish(char *Topic, char *Message)
 {
+  return publish(Topic,Message,false,false,A6_MQTT::QOS_0,0);
+}
+
+bool A6_MQTT::publish(char *Topic, char *Message, bool dup, bool ret)
+{
+  return publish(Topic,Message,dup,ret,A6_MQTT::QOS_0,0);
+}
+
+bool A6_MQTT::publish(char *Topic, char *Message, bool dup , bool retain ,eQOS qos ,uint16_t packetid) // dup,retain,qos
+{
   bool rc = false;
+  uint16_t *pW;
   if (connectedToServer)
   {
+    memset(mqttbuffer,0x55,sizeof(mqttbuffer));
     struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
     pFH->controlpackettype = MQ_PUBLISH;
-    pFH->rsv = 0;
+    pFH->dup = dup;
+    pFH->qos = qos;
+    pFH->retain = retain;
     pFH->rl = strlen(Topic) + strlen(Message) + sizeof(uint16_t);  // QOS 0 no messageid
+    if (qos != QOS_0)
+      pFH->rl += sizeof(int16_t);
     // copy topic as variable string
     struct sVariableString *pVS = (struct sVariableString *)&mqttbuffer[2];
     pVS->length = bswap(strlen(Topic));
-    strcpy(pVS->string,Topic);
-    // copy message after topic
-    char *pS = (char*)((int)pVS + sizeof(uint16_t) + strlen(Topic));
-    strcpy(pS,Message);
+    memcpy(pVS->string,Topic,strlen(Topic));
+    pW = (uint16_t *)(pVS->string + strlen(Topic));  // point to where messageid will go (if needed)
+    if (qos != QOS_0)  // packetid after topic if qos 1 or 2
+    {
+ //     sprintf(line,"\r\nPI %x %x\r\n",packetid,bswap(packetid));
+ //     gsm.DebugWrite(line);
+      *pW++ = bswap(packetid);  // if messageid written, increment pointer
+    }
+    // copy message after messageid which may or may not have been written 
+    memcpy((char*)pW,Message,strlen(Message));
     _PingNextMillis = millis() + (_KeepAliveTimeOut*1000) - 2000;
-    rc = gsm.sendToServer(mqttbuffer,pFH->rl + 2);
+    rc = gsm.sendToServer(mqttbuffer,pFH->rl + sizeof(struct sFixedHeader));
   }
   return rc;
 }
@@ -297,7 +327,9 @@ bool A6_MQTT::disconnect()
   {
     struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
     pFH->controlpackettype = MQ_DISCONNECT;
-    pFH->rsv = 0;
+    pFH->dup = 0;
+    pFH->qos = 0;
+    pFH->retain = 0;
     pFH->rl = 0;
     connectedToServer = false;
     rc = gsm.sendToServer(mqttbuffer,2);
@@ -312,7 +344,9 @@ bool A6_MQTT::disconnect()
   {
     struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
     pFH->controlpackettype = MQ_UNSUBSCRIBE;
-    pFH->rsv = 2;
+    pFH->dup = 0;
+    pFH->qos = 1;
+    pFH->retain = 0;
     pFH->rl = (2*sizeof(int16_t)) +strlen(SubTopic); // messageid + length + string
     int16_t *pW = (int16_t *)&mqttbuffer[2];
     *pW++ = bswap(MessageID);
