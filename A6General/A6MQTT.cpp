@@ -153,6 +153,14 @@ void A6_MQTT::serialparse()
             ParseState = GETLENGTH;
             modemMessageLength = 0;
           }
+          else if (modemMessageLength == strlen("+TCPCLOSED:") && strncmp(modemmessage,"+TCPCLOSED:",11) == 0)
+          {
+            gsm.DebugWrite(F("Server closed connection\r\n"));
+            connectedToServer = false;
+            gsm.stopIP();
+            gsm.getCIPstatus();
+            AutoConnect();
+          }
           else
             modemMessageLength = 0; // just discard      
         }

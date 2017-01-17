@@ -143,17 +143,9 @@ bool GPRSA6::startIP(char *apn)  // apn
 bool GPRSA6::stopIP()
 {
   bool rc = false;
-  sprintf(tempbuf,"AT+CGACT=0,%d\r",cid);
-  HW_SERIAL.print(tempbuf);
-  if (waitresp("OK\r\n",1000))
-  {
-//    DebugWrite("\r\n5:");
- //   DebugWrite(getCIPstatusString());
-    gsm.RXFlush();
-  //  gsm.freecid(cid);
-    rc = true;
-  }
-//  DebugWrite(getCIPstatusString());
+  gsm.RXFlush();
+  HW_SERIAL.print("AT+CIPCLOSE\r");
+  rc = waitresp("OK\r\n",1000);
   return rc;
 }
 

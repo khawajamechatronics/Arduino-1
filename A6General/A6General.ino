@@ -10,7 +10,7 @@
 char buff[30];
 char *msg = "GET /WC/last3.php  HTTP/1.0\r\nHost: \"david-henry.dyndns.tv\"\r\nUser-Agent: Arduino\r\n\r\n";
 
-A6_MQTT MQTT(100);
+A6_MQTT MQTT(30);
 uint32_t nextpublish;
 #define PUB_DELTA 20000 // publish every 20 secs
 bool unsubscribed = false;
@@ -82,15 +82,9 @@ void setup() {
   //      Serial.println("IP stopped");
     //  else
       //  Serial.println("IP not stopped");
-      if (gsm.connectTCPserver("david-henry.dyndns.tv",1883))
-      {
-        Serial.println("TCP up");
-        MQTT.AutoConnect();
+      MQTT.AutoConnect();
      //   gsm.sendToServer(msg);
     //    nextpublish = millis()+PUB_DELTA;
-      }
-      else
-        Serial.println("TCP down");
     }
     else
       Serial.println("IP down");
@@ -105,7 +99,7 @@ void loop() {
   {
     if (MQTT._PingNextMillis < millis())
       MQTT.ping();
-#if 1
+#if 0
     if (nextpublish < millis())
     {
       nextpublish = millis()+PUB_DELTA;
@@ -121,7 +115,13 @@ void loop() {
 
 void A6_MQTT::AutoConnect()
 {
-  MQTT.waitingforConnack = connect("a", 0, 0, "", "", 1, 0, 0, 0, "", "");
+  if (gsm.connectTCPserver("david-henry.dyndns.tv",1883))
+  {
+    Serial.println("TCP up");
+    MQTT.waitingforConnack = connect("a", 0, 0, "", "", 1, 0, 0, 0, "", "");
+  }
+  else
+    Serial.println("TCP down");
 }
 
 void A6_MQTT::OnConnect(enum eConnectRC rc)
