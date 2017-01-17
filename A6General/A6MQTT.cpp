@@ -164,7 +164,7 @@ void A6_MQTT::serialparse()
             connectedToServer = false;
             gsm.stopIP();
             gsm.getCIPstatus();
-            AutoConnect();
+            OnDisconnect();
           }
           else
             modemMessageLength = 0; // just discard      
@@ -207,13 +207,13 @@ void A6_MQTT::mqttparse()
   struct sVariableString *pVS;
   int16_t slength;
   uint16_t *pW;
-  Serial.print("<<");
+  gsm.DebugWrite("<<");
   for (int ii=0;ii<pFH->rl+2;ii++)
   {
-    Serial.print(modemmessage[ii],HEX);
-    Serial.print(',');
+    sprintf(line,"%02X,",modemmessage[ii]);
+    gsm.DebugWrite(line);
   }
-  Serial.println();
+  gsm.DebugWrite("\r\n");
   switch (pFH->controlpackettype)
   {
     case MQ_CONNACK:
@@ -251,9 +251,24 @@ void A6_MQTT::mqttparse()
     case MQ_UNSUBACK:
       pW = (uint16_t *)&modemmessage[2];
       gsm.DebugWrite("unsuback: ");
-      gsm.DebugWrite(*pW);
+      gsm.DebugWrite(bswap(*pW));
       gsm.DebugWrite("\r\n");
+      OnUnsubscribe(bswap(*pW));
       break;
+    case MQ_PUBREC:
+      pW = (uint16_t *)&modemmessage[2];
+      gsm.DebugWrite("pubrec: ");
+      gsm.DebugWrite(bswap(*pW));
+      gsm.DebugWrite("\r\n");
+      pubrel(bswap(*pW));
+      break;  
+    case MQ_PUBCOMP:  
+      pW = (uint16_t *)&modemmessage[2];
+      gsm.DebugWrite("pubcomp: ");
+      gsm.DebugWrite(bswap(*pW));
+      gsm.DebugWrite("\r\n");
+      OnPubAck(bswap(*pW));
+      break;  
   }
 }
 
@@ -356,5 +371,23 @@ bool A6_MQTT::disconnect()
     rc = gsm.sendToServer(mqttbuffer,pFH->rl + 2);  
   }
   return rc;
+ }
+
+ bool A6_MQTT::pubrel(uint16_t pi)
+ {
+  bool rc = false;
+  if (connectedToServer)
+  {
+    struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
+    pFH->controlpackettype = MQ_PUBREL;
+    pFH->dup = 0;
+    pFH->qos = 1;
+    pFH->retain = 0;
+    pFH->rl = sizeof(int16_t);
+    int16_t *pW = (int16_t *)&mqttbuffer[2];
+    *pW = bswap(pi);
+    rc = gsm.sendToServer(mqttbuffer,pFH->rl + 2);  
+  } 
+  return rc; 
  }
 

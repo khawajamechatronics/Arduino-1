@@ -129,10 +129,12 @@ class A6_MQTT
     
     void AutoConnect(void);
     void OnConnect(eConnectRC) __attribute__((weak));
+    void OnDisconnect() __attribute__((weak));
     void OnSubscribe(uint16_t)  __attribute__((weak));
     void OnMessage(char *Topic,char *Message,bool,bool,eQOS)   __attribute__((weak));
     void OnPubAck(uint16_t messageid) __attribute__((weak));
-
+    void OnUnsubscribe(uint16_t)  __attribute__((weak));
+    
     void serialparse();
     void mqttparse();
 
@@ -154,6 +156,7 @@ class A6_MQTT
  //   void _sendUTFString(char *string);
  //   void _sendLength(int len);
     void _ping(void);
+    bool pubrel(uint16_t);
  //   void _tcpInit(void);
  //   char _sendAT(char *command, unsigned long waitms);
  //   unsigned int _generateMessageID(void);

@@ -94,7 +94,7 @@ void setup() {
   else
     Serial.println("GSM down");
 }
-uint16_t PACKET_ID = 0x200;   // for qos 1
+uint16_t PACKET_ID = 0;   // for qos 1
 void loop() {
   if (MQTT.connectedToServer || MQTT.waitingforConnack)
   {
@@ -106,7 +106,9 @@ void loop() {
       nextpublish = millis()+PUB_DELTA;
       sprintf(buff,"%lu",millis());
 //      MQTT.publish("/blah",buff,false,false); // dup false, retain true, QOS 0
-      MQTT.publish("/blah",buff,false,true,MQTT.QOS_1,PACKET_ID); // dup false, retain false, QOS 
+      Serial.print("Publish ");
+      Serial.println(PACKET_ID,HEX);
+      MQTT.publish("/blah",buff,false,true,MQTT.QOS_2,PACKET_ID); // dup false, retain false, QOS 
       PACKET_ID += 0x200;
     }
 #endif
@@ -135,7 +137,6 @@ void A6_MQTT::OnConnect(enum eConnectRC rc)
       Serial.println("Connected");
       MQTT._PingNextMillis = millis() + (MQTT._KeepAliveTimeOut*1000) - 2000;
       MQTT.subscribe(1234,"/blah",1);
-  //    MQTT.disconnect();
      break;
     case MQTT.CONNECT_RC_REFUSED_PROTOCOL:
       Serial.println("Protocol error");
@@ -169,5 +170,11 @@ void A6_MQTT::OnPubAck(uint16_t messageid)
   Serial.print("Packet ");
   Serial.print(messageid,HEX);
   Serial.println(" Acknowledged");
+}
+
+void A6_MQTT::OnDisconnect()
+{
+  Serial.println("Server disconnected");
+  MQTT.AutoConnect();
 }
 
