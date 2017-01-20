@@ -7,6 +7,9 @@
 #include <TimerOne.h>
 
 void HW_SERIAL_EVENT();
+char comm_buf[COMM_BUF_LEN];  // communication buffer +1 for 0x00 termination
+int inlevel, outlevel;        // data in comm_buf
+
 bool GPRSA6Device::begin(long baudrate)
 {
   bool rc = false;
@@ -30,9 +33,9 @@ bool GPRSA6Device::begin()
 // ATV1
 GPRSA6Device::GPRSA6Device(){}
 
-void GPRSA6Device::push(char c)
+void push(char c)
 {
-  DebugWrite(c);
+//  DebugWrite(c);
   comm_buf[inlevel++] = c;
   if (inlevel == COMM_BUF_LEN)  // handle wrap around
     inlevel = 0;
@@ -46,6 +49,7 @@ char GPRSA6Device::pop()
   else
   {
     c = comm_buf[outlevel++];
+	DebugWrite(c);
     if (outlevel == COMM_BUF_LEN)  // handle wrap around
       outlevel = 0;
     if (inlevel == outlevel)
@@ -141,12 +145,10 @@ bool GPRSA6Device::GetLineWithPrefix(char const *px,char *outbuf, int bufsize,in
           }
           break;
         case AFTER_PREFIX:
- //         Serial.print('[');
           *outbuf++ = c;
           bufsize--;
           if (c == 0x0d || c == 0x0a || c == 0 || bufsize == 0)
           {
- //           Serial.print(']');
             *outbuf = 0; // add end marker
             alldone = true;
           }
@@ -165,3 +167,7 @@ void GPRSA6Device::RXFlush()
   inlevel = outlevel = 0;
 }
 
+void HW_SERIAL_EVENT() {
+  while (HW_SERIAL.available())
+    push((char)HW_SERIAL.read());
+}

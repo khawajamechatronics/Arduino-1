@@ -26,10 +26,10 @@ class GPRSA6Device
     void RXFlush();  // clear all data in input buffer
     bool enableDebug;
     char pop();       // get data from buffer, -1 if none available
-    void push(char);   // add incoming data to buffer
+ //   void push(char);   // add incoming data to buffer
   private:
-    char comm_buf[COMM_BUF_LEN];  // communication buffer +1 for 0x00 termination
-    int inlevel, outlevel;        // data in comm_buf
+//    char comm_buf[COMM_BUF_LEN];  // communication buffer +1 for 0x00 termination
+  //  int inlevel, outlevel;        // data in comm_buf
 };
 #endif
 

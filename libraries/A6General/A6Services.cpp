@@ -14,10 +14,12 @@ static char *statusnames[] = {"IP INITIAL","IP START","IP CONFIG","IP IND","IP G
 
 char tempbuf[100];
 
+#if 0
 void HW_SERIAL_EVENT() {
   while (HW_SERIAL.available())
     gsm.push(HW_SERIAL.read());
 }
+#endif
 
 bool GPRSA6::getIMEI(char* imei)
 {

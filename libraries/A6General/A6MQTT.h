@@ -95,7 +95,7 @@ class A6_MQTT
     bool publish(char *Topic, char *Message); // QOS 0 no dup no retain
     bool publish(char *Topic, char *Message, bool , bool ); // dup,retain,qos=0
     bool publish(char *Topic, char *Message, bool , bool, eQOS,uint16_t packetid ); // dup,retain,qos
-    bool subscribe(unsigned int MessageID, char *SubTopic, char SubQoS);
+    bool subscribe(unsigned int MessageID, char *SubTopic, eQOS SubQoS);
     bool unsubscribe(unsigned int MessageID, char *SubTopic);
     bool disconnect(void);
     bool available(void);
@@ -120,6 +120,8 @@ class A6_MQTT
     char CombinedTopicMessageBuffer[MAX_MESSAGE_LENGTH];
     int mqttmsglength;
     bool pubrel(uint16_t);
+	bool puback(uint16_t);
+	bool pubcomp(uint16_t);
 };
 #endif /* A6_MQTT_H_ */
 

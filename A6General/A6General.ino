@@ -8,7 +8,6 @@
 #include "A6MQTT.h"
 
 char buff[30];
-char *msg = "GET /WC/last3.php  HTTP/1.0\r\nHost: \"david-henry.dyndns.tv\"\r\nUser-Agent: Arduino\r\n\r\n";
 
 A6_MQTT MQTT(30);
 uint32_t nextpublish;
@@ -16,7 +15,7 @@ uint32_t nextpublish;
 bool unsubscribed = false;
 void setup() {
   Serial.begin(115200);
-  if (gsm.begin(A6_BAUDRATE))
+  if (gsm.begin())
   {
     Serial.println("GSM up");
     gsm.getCIPstatus();
@@ -105,14 +104,13 @@ void loop() {
     {
       nextpublish = millis()+PUB_DELTA;
       sprintf(buff,"%lu",millis());
-//      MQTT.publish("/blah",buff,false,false); // dup false, retain true, QOS 0
       Serial.print("Publish ");
       Serial.println(PACKET_ID,HEX);
-      MQTT.publish("/blah",buff,false,true,MQTT.QOS_2,PACKET_ID); // dup false, retain false, QOS 
+      MQTT.publish("/blah",buff,false,true,MQTT.QOS_0,PACKET_ID); // dup false, retain false, QOS 
       PACKET_ID += 0x200;
     }
 #endif
-    MQTT.serialparse();
+    MQTT.Parse();
   }
   if (Serial.available())
     gsm.ModemWrite(Serial.read());

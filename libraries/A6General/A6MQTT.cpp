@@ -106,19 +106,18 @@ bool A6_MQTT::connect(char *ClientIdentifier, char UserNameFlag, char PasswordFl
   return gsm.sendToServer(mqttbuffer,connsize);
 }
 
-bool A6_MQTT::subscribe(unsigned int MessageID, char *SubTopic, char SubQoS)
+bool A6_MQTT::subscribe(unsigned int MessageID, char *SubTopic, eQOS SubQoS)
 {
   bool rc = false;
   if (connectedToServer)
   {
-    int connsize = sizeof(struct sFixedHeader)+sizeof(struct sSubscribeVariableHeader)+sizeof(uint16_t)+strlen(SubTopic) + 1; // includes QOS byte
     struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
     int bindex = 0;
     pFH->dup = 0;
     pFH->qos = 1;
     pFH->retain = 0;
     pFH->controlpackettype = MQ_SUBSCRIBE;
-    pFH->rl = connsize-sizeof(struct sFixedHeader); // do not encode in data
+    pFH->rl = sizeof(struct sSubscribeVariableHeader)+sizeof(uint16_t)+strlen(SubTopic) + 1; // includes QOS b 
     bindex += sizeof(struct sFixedHeader);
     struct sSubscribeVariableHeader *pVH = (struct sSubscribeVariableHeader *)&mqttbuffer[bindex];
     pVH->packetid = bswap(MessageID);
@@ -127,8 +126,8 @@ bool A6_MQTT::subscribe(unsigned int MessageID, char *SubTopic, char SubQoS)
     pVS->length = bswap(strlen(SubTopic));
     strcpy(pVS->string,SubTopic);
     bindex += sizeof(int16_t) + strlen(SubTopic);
-    *(uint8_t *)bindex = SubQoS; 
-    rc = gsm.sendToServer(mqttbuffer,connsize);
+    mqttbuffer[bindex] = SubQoS; 
+    rc = gsm.sendToServer(mqttbuffer,pFH->rl + sizeof(struct sFixedHeader));
   }
   return rc;
 }
@@ -139,9 +138,6 @@ bool A6_MQTT::subscribe(unsigned int MessageID, char *SubTopic, char SubQoS)
  *  We look for complete modem messages & react to +CIPRCV, tgr4ansfer n bytes tp mqtt parser
  *  wait for cr/lf cr , as terminators 
  */
-//const char *rcv = "+CIPRCV:";
-//const char rcv[] PROGMEM = "+CIPRCV:";
-//const char *tcpclosed PROGMEM = "+TCPCLOSED:0";
 void A6_MQTT::Parse()
 {
   char c = gsm.pop();
@@ -206,7 +202,7 @@ void A6_MQTT::mqttparse()
   struct sSubackVariableHeader *pSVH;
   struct sVariableString *pVS;
   int16_t slengtht,slengthm;  // topic and message lengths
-  uint16_t *pW;
+  uint16_t *pW,pi;
   gsm.DebugWrite(F("<<"));
   for (int ii=0;ii<pFH->rl+2;ii++)
   {
@@ -236,9 +232,31 @@ void A6_MQTT::mqttparse()
       slengtht = bswap(pVS->length);
       memcpy(CombinedTopicMessageBuffer,pVS->string,slengtht);  // copy out topic
       CombinedTopicMessageBuffer[slengtht] = 0;  // add end marker
-      slengthm = pFH->rl-slengtht-sizeof(int16_t);
-      memcpy(&CombinedTopicMessageBuffer[slengtht+1],pVS->string+slengtht,slengthm);
+	  // get the packet index (if any)
+	  if (pFH->qos > QOS_0)
+	  {
+		pi = *(uint16_t *)(pVS->string+slengtht);
+		slengthm = pFH->rl-slengtht-(2*sizeof(int16_t));
+		memcpy(&CombinedTopicMessageBuffer[slengtht+1],pVS->string+slengtht+sizeof(uint16_t),slengthm);  
+	  }
+	  else
+	  {
+		slengthm = pFH->rl-slengtht-sizeof(int16_t);
+		memcpy(&CombinedTopicMessageBuffer[slengtht+1],pVS->string+slengtht,slengthm);  
+	  }
       CombinedTopicMessageBuffer[slengtht+slengthm+1] = 0;
+//	  Serial.println(pFH->qos);
+	  switch (pFH->qos)
+	  {
+		  case QOS_0:  // do nothing
+			break;
+		  case QOS_1:  // send a PUBACK
+			puback(pi);
+			break;
+		  case QOS_2:  // send a PUBREL
+			pubcomp(pi);
+		    break;
+	  }
       OnMessage(CombinedTopicMessageBuffer,&CombinedTopicMessageBuffer[slengtht+1],pFH->dup,pFH->retain,pFH->qos ); // dup & retain flags, QOS
       break;
     case MQ_PINGRESP:
@@ -392,3 +410,37 @@ bool A6_MQTT::disconnect()
   return rc; 
  }
 
+bool A6_MQTT::puback(uint16_t pi) // pi is BE format
+{
+  bool rc = false;
+  if (connectedToServer)
+  {
+    struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
+    pFH->controlpackettype = MQ_PUBACK;
+    pFH->dup = 0;
+    pFH->qos = 0;
+    pFH->retain = 0;
+    pFH->rl = sizeof(int16_t);
+    int16_t *pW = (int16_t *)&mqttbuffer[2];
+    *pW = pi;
+    rc = gsm.sendToServer(mqttbuffer,pFH->rl + sizeof(struct sFixedHeader));  
+  } 
+  return rc; 	
+}
+bool A6_MQTT::pubcomp(uint16_t pi) // pi is BE format
+{
+  bool rc = false;
+  if (connectedToServer)
+  {
+    struct sFixedHeader *pFH = (struct sFixedHeader *)mqttbuffer;
+    pFH->controlpackettype = MQ_PUBCOMP;
+    pFH->dup = 0;
+    pFH->qos = 0;
+    pFH->retain = 0;
+    pFH->rl = sizeof(int16_t);
+    int16_t *pW = (int16_t *)&mqttbuffer[2];
+    *pW = pi;
+    rc = gsm.sendToServer(mqttbuffer,pFH->rl + sizeof(struct sFixedHeader));  
+  } 
+  return rc; 	
+}
