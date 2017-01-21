@@ -29,9 +29,8 @@ void setup() {
     // we need a unique userid when logging on to the broker. We also need a unique topic
     // name. We'll use this devices IMIE tp get that.
     if (!gsm.getIMEI(imei))
-      strcpy(imei,"defalutimei");
-    strcpy(topic,"/");
-    strcat(topic,imei);
+      strcpy(imei,"defaultimei");
+    strcpy(topic,imei);
     // setup GPRS connection with your provider
     if (gsm.startIP(APN))
     {
@@ -66,7 +65,7 @@ void loop() {
       nextpublish = millis()+PUB_DELTA;
       sprintf(buff,"%lu",millis());
       messageid++;
-      MQTT.publish(topic,buff,false,false,MQTT.QOS_1,messageid);
+      MQTT.publish(topic,buff,false,false,MQTT.QOS_2,messageid);
     }
     /*
      * Process data received from the broker

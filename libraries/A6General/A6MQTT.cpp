@@ -6,7 +6,7 @@
 /*
  *   add Reset function -- see begin()
  *   print tcpstatus correctly
- *   Get APN from nain program
+ *   Get APN from main program
  *   Replace all Serial by HW_SERIAL
  *   Set HW serial via macro #define HW_SERIAL Serial1  etc
  *   Replace all serialEvent by SERIALEVENT
@@ -172,6 +172,7 @@ void A6_MQTT::Parse()
         {
           modemmessage[modemMessageLength] = 0;
           mqttmsglength = atoi(modemmessage);
+		  gsm.rxcount += mqttmsglength;
           modemMessageLength = 0;
           ParseState = GETDATA;
         }
@@ -245,7 +246,6 @@ void A6_MQTT::mqttparse()
 		memcpy(&CombinedTopicMessageBuffer[slengtht+1],pVS->string+slengtht,slengthm);  
 	  }
       CombinedTopicMessageBuffer[slengtht+slengthm+1] = 0;
-//	  Serial.println(pFH->qos);
 	  switch (pFH->qos)
 	  {
 		  case QOS_0:  // do nothing

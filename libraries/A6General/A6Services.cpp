@@ -209,6 +209,7 @@ bool GPRSA6::sendToServer(char*msg)
     {
       HW_SERIAL.print(msg);
       HW_SERIAL.write(0x1a);
+	  txcount += strlen(msg) + 1;
       waitresp("OK\r\n",1000);
       rc = true;
     }
@@ -227,6 +228,7 @@ bool GPRSA6::sendToServer(char*msg,int length)
     if (waitresp(">",100))
     {
       HW_SERIAL.print(msg);
+	  txcount += length;
       waitresp("OK\r\n",1000);
       rc = true;
     }
@@ -251,6 +253,7 @@ bool GPRSA6::sendToServer(byte*msg,int length)
         sprintf(buff,"%02X,",msg[i]);
         DebugWrite(buff);
         HW_SERIAL.write(msg[i]);
+		txcount++;
       }
       waitresp("OK\r\n",1000);
       rc = true;

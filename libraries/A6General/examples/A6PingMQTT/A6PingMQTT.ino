@@ -14,7 +14,7 @@
   * You may send publish messages using the same parameters from another MQTT client and you will see the message
   * displayed on the serial terminal. However it doesnt stop the disconnect mechanism working
   */
-//#define KEEP_PINGING
+#define KEEP_PINGING // comment out to demonstrate the effect of not ping and the connection going down
 #include "A6Services.h"
 #include "A6MQTT.h"
 
@@ -25,7 +25,6 @@ char buff[30];    // We must send at least 1 packet within the chosen keepalive 
 A6_MQTT MQTT(KEEP_ALIVE_TIME);
 
 char imei[20];
-#define PUB_DELTA 20000 // publish every 20 secs
 
 void setup() {
   Serial.begin(115200);
@@ -37,7 +36,7 @@ void setup() {
     // we need a unique userid when logging on to the broker. We also need a unique topic
     // name. We'll use this devices IMIE tp get that.
     if (!gsm.getIMEI(imei))
-      strcpy(imei,"defaultimei");
+      strcpy(imei,"defaultime");
     // setup GPRS connection with your provider
     if (gsm.startIP(APN))
     {

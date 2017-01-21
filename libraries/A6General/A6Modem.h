@@ -1,8 +1,8 @@
 #ifndef A6DEVICE_H
 #define A6DEVICE_H
 
-#define HW_SERIAL Serial1
-#define HW_SERIAL_EVENT serialEvent1
+#define HW_SERIAL Serial
+#define HW_SERIAL_EVENT serialEvent
 
 #define A6_BAUDRATE 115200
 #define COMM_BUF_LEN 200  // make big enough to hold all incoming data
@@ -27,6 +27,7 @@ class GPRSA6Device
     bool enableDebug;
     char pop();       // get data from buffer, -1 if none available
  //   void push(char);   // add incoming data to buffer
+	int32_t rxcount,txcount;
   private:
 //    char comm_buf[COMM_BUF_LEN];  // communication buffer +1 for 0x00 termination
   //  int inlevel, outlevel;        // data in comm_buf

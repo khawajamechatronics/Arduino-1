@@ -31,7 +31,10 @@ bool GPRSA6Device::begin()
   return begin(A6_BAUDRATE);
 }
 // ATV1
-GPRSA6Device::GPRSA6Device(){}
+GPRSA6Device::GPRSA6Device(){
+	rxcount = 0;
+	txcount = 0;
+}
 
 void push(char c)
 {
