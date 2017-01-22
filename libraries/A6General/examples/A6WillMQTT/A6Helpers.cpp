@@ -21,7 +21,6 @@ void GPRSA6Device::HWReset()
    * Connect the emitter of the transistor to ground and the collector to the A6 reset pin
    * http://electronics.stackexchange.com/questions/82222/how-to-use-a-transistor-to-pull-a-pin-low
    */
-  DEBUG_SERIAL.println("HW reset");
   pinMode(TRANSISTOR_CONTROL,OUTPUT);
   digitalWrite(TRANSISTOR_CONTROL,LOW);
   digitalWrite(TRANSISTOR_CONTROL,HIGH);

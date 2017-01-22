@@ -14,7 +14,7 @@
   * You may send publish messages using the same parameters from another MQTT client and you will see the message
   * displayed on the serial terminal. However it doesnt stop the disconnect mechanism working
   */
-#define KEEP_PINGING // comment out to demonstrate the effect of not ping and the connection going down
+//#define KEEP_PINGING // comment out to demonstrate the effect of not ping and the connection going down
 #include "A6Services.h"
 #include "A6MQTT.h"
 

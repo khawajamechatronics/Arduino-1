@@ -9,30 +9,35 @@
 #include "A6Services.h"
 #include "A6MQTT.h"
 
-char buff[100];    // We must send at least 1 packet within the chosen keepalive time
-                  // If you have nothing else to send, send at least a  ping
+char buff[100];    
 #define APN "uinternet"  // write your APN here
-A6_MQTT MQTT(30);
+#define KEEPALIVE 25
+
+A6_MQTT MQTT(KEEPALIVE);
 uint32_t nextpublish;
-char topic[30];
+char *willtopic = "Henry/will";
+char *willmessage = "byebye";
+
 char imei[20];
 #define PUB_DELTA 25000 // publish every 20 secs
-
+bool allowConnect = true;   // only allow the first connect
 #define DEBUG_SERIAL Serial
 void setup() {
   DEBUG_SERIAL.begin(115200);
    // A6 uses default baud 115200
    // power up the board, do hardware reset & get ready to execute commands
-   DEBUG_SERIAL.println("A6 Simple MQTT");
-   gsm.enableDebug = true;
+   DEBUG_SERIAL.println("A6 MQTT Will demo");
+   DEBUG_SERIAL.print("Open up a client and subscribe to ");
+   DEBUG_SERIAL.println(willtopic);
+   DEBUG_SERIAL.print(KEEPALIVE); DEBUG_SERIAL.println(" secs after connecting to broker the Will message should appear");
+   
   if (gsm.begin()) 
   {
     DEBUG_SERIAL.println("GSM up");
     // we need a unique userid when logging on to the broker. We also need a unique topic
     // name. We'll use this devices IMIE tp get that.
     if (!gsm.getIMEI(imei))
-      strcpy(imei,"defaultimei");
-    strcpy(topic,imei);
+      strcpy(imei,"defaultime");
     // setup GPRS connection with your provider
     if (gsm.startIP(APN))
     {
@@ -48,29 +53,10 @@ void setup() {
 }
 void loop() {
   /*
-   *  THe condition below checks if the modem is able to process data from the broker
+   * We send nothing which will cause the broker to disconnect us after KeepAlive seconds
+   * THe Will & Testament will be sent to anyone subscrobed
    */
   if (MQTT.connectedToServer || MQTT.waitingforConnack)
-  {
-    /*
-     * This machanism ensures that the connection with the broker is not disconnected du to inactivirt
-     */
-    if (MQTT._PingNextMillis < millis())
-      MQTT.ping();
-    /*
-     *  Publish a message periodically
-     */
-    if (nextpublish < millis())
-    {
-      nextpublish = millis()+PUB_DELTA;
-      sprintf(buff,"%lu",millis());
-      MQTT.publish(topic,buff); // dup false, retain false, QOS 
-    }
-    /*
-     * Process data received from the broker
-     * Note that this may be mixed up with unsolicited messages from the modem. Parse takes car of that
-     */
     MQTT.Parse();
-  }
 }
 

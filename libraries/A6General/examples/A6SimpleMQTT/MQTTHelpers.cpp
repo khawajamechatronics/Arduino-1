@@ -10,12 +10,15 @@
 #include <Arduino.h>
 #include "A6Services.h"
 #include "A6MQTT.h"
+#include <SoftwareSerial.h>
 
 #define BROKER_ADDRESS "test.mosquitto.org"  // public broker
 #define BROKER_PORT 1883
 extern char topic[];
 extern char imei[];
 extern A6_MQTT MQTT;
+extern char buff[]; 
+#define DEBUG_SERIAL Serial
 
 /*
  * This function is called once in main setup
@@ -25,12 +28,12 @@ void A6_MQTT::AutoConnect()
 {
   if (gsm.connectTCPserver(BROKER_ADDRESS,BROKER_PORT))
   {
-    Serial.println("TCP up");
+    DEBUG_SERIAL.println("TCP up");
     // connect, no userid, password or Will
-    MQTT.waitingforConnack = connect(imei, 0, 0, "", "", 1, 0, 0, 0, "", "");
+    MQTT.waitingforConnack = connect(imei, false, false, "", "", true, false, A6_MQTT::QOS_0, false, "", "");
   }
   else
-    Serial.println("TCP down");
+    DEBUG_SERIAL.println("TCP down");
 }
 
 /*
@@ -42,15 +45,15 @@ void A6_MQTT::OnConnect(enum eConnectRC rc)
   switch (rc)
   {
     case MQTT.CONNECT_RC_ACCEPTED:
-      Serial.println("Connected to broker");
+      DEBUG_SERIAL.println("Connected to broker");
       MQTT._PingNextMillis = millis() + (MQTT._KeepAliveTimeOut*1000) - 2000;
       MQTT.subscribe(1234,topic,MQTT.QOS_0);
      break;
     case MQTT.CONNECT_RC_REFUSED_PROTOCOL:
-      Serial.println("Protocol error");
+      DEBUG_SERIAL.println("Protocol error");
       break;
     case MQTT.CONNECT_RC_REFUSED_IDENTIFIER:
-      Serial.println("Identity error");
+      DEBUG_SERIAL.println("Identity error");
       break;
   }
 }
@@ -60,8 +63,8 @@ void A6_MQTT::OnConnect(enum eConnectRC rc)
  */
 void A6_MQTT::OnSubscribe(uint16_t pi)
 {
-  Serial.print("Subscribed to ");
-  Serial.println(pi);
+  DEBUG_SERIAL.print("Subscribed to ");
+  DEBUG_SERIAL.println(pi);
 }
 
 /*
@@ -70,13 +73,15 @@ void A6_MQTT::OnSubscribe(uint16_t pi)
 void A6_MQTT::OnMessage(char *topic,char *message,bool dup, bool ret,A6_MQTT::eQOS qos)
 {
   if (dup)
-    Serial.print("DUP ");
+    DEBUG_SERIAL.print("DUP ");
   if (ret)
-    Serial.print("RET ");
-  Serial.print("QOS ");
-  Serial.println(qos);
-  Serial.print("Topic: ");Serial.println(topic);
-  Serial.print("Message: ");Serial.println(message);
+    DEBUG_SERIAL.print("RET ");
+  DEBUG_SERIAL.print("QOS ");
+  DEBUG_SERIAL.println(qos);
+  DEBUG_SERIAL.print("Topic: ");DEBUG_SERIAL.println(topic);
+  DEBUG_SERIAL.print("Message: ");DEBUG_SERIAL.println(message);
+  sprintf(buff,"RX %lu TX %lu",gsm.rxcount,gsm.txcount);
+  DEBUG_SERIAL.println(buff);
 }
 
 /*
@@ -85,9 +90,9 @@ void A6_MQTT::OnMessage(char *topic,char *message,bool dup, bool ret,A6_MQTT::eQ
  */
 void A6_MQTT::OnPubAck(uint16_t messageid)
 {
-  Serial.print("Packet ");
-  Serial.print(messageid,HEX);
-  Serial.println(" Acknowledged");
+  DEBUG_SERIAL.print("Packet ");
+  DEBUG_SERIAL.print(messageid,HEX);
+  DEBUG_SERIAL.println(" Acknowledged");
 }
 
 /*
@@ -96,7 +101,7 @@ void A6_MQTT::OnPubAck(uint16_t messageid)
  */
 void A6_MQTT::OnDisconnect()
 {
-  Serial.println("Server disconnected");
+  DEBUG_SERIAL.println("Server disconnected");
   MQTT.AutoConnect();
 }
 
