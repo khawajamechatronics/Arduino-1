@@ -1,16 +1,17 @@
 #ifndef A6DEVICE_H
 #define A6DEVICE_H
 
-#define HW_SERIAL Serial
-#define HW_SERIAL_EVENT serialEvent
+#define HW_SERIAL Serial1
+#define HW_SERIAL_EVENT serialEvent1
 
 #define A6_BAUDRATE 115200
 #define COMM_BUF_LEN 200  // make big enough to hold all incoming data
 
-class GPRSA6Device
+class A6GPRSDevice
 {
   public:
-    GPRSA6Device();
+    A6GPRSDevice();
+    ~A6GPRSDevice();
     virtual bool begin();
     virtual bool begin(long baud_rate);
     void ModemWrite(char);

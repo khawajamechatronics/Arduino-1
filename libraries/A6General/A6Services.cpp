@@ -2,12 +2,12 @@
 #include "A6Services.h"
 #include <ctype.h>
 
-GPRSA6 gsm;
-GPRSA6::GPRSA6(){
+A6GPRS gsm;
+A6GPRS::A6GPRS(){
   cid = 1;
   CIPstatus = IP_STATUS_UNKNOWN;
 };
-GPRSA6::~GPRSA6(){};
+A6GPRS::~A6GPRS(){};
 
 static char *statusnames[] = {"IP INITIAL","IP START","IP CONFIG","IP IND","IP GPRSACT","IP STATUS","TCP/UDP CONNECTING","IP CLOSE","CONNECT OK"};
 //const char* const status_names[] PROGMEM = {"IP INITIAL","IP START","IP CONFIG","IP IND","IP GPRSACT","IP STATUS","TCP/UDP CONNECTING","IP CLOSE","CONNECT OK"};
@@ -21,7 +21,7 @@ void HW_SERIAL_EVENT() {
 }
 #endif
 
-bool GPRSA6::getIMEI(char* imei)
+bool A6GPRS::getIMEI(char* imei)
 {
   bool rc;
   gsm.RXFlush();
@@ -31,7 +31,7 @@ bool GPRSA6::getIMEI(char* imei)
   return rc;
 }
 
-bool GPRSA6::getCIMI(char* cimi)
+bool A6GPRS::getCIMI(char* cimi)
 {
   bool rc;
   gsm.RXFlush();
@@ -41,7 +41,7 @@ bool GPRSA6::getCIMI(char* cimi)
   waitresp("OK\r\n",500);
   return rc;
 }
-bool GPRSA6::getRTC(char* rtc)
+bool A6GPRS::getRTC(char* rtc)
 {
   bool rc;
   gsm.RXFlush();
@@ -51,7 +51,7 @@ bool GPRSA6::getRTC(char* rtc)
   waitresp("OK\r\n",500);
   return rc;
 }
-bool GPRSA6::setRTC(char* rtc)
+bool A6GPRS::setRTC(char* rtc)
 {
   gsm.RXFlush();
   HW_SERIAL.print(F("AT+CCLK=\""));
@@ -60,7 +60,7 @@ bool GPRSA6::setRTC(char* rtc)
   return waitresp("OK\r\n",500);
 }
 
-enum GPRSA6::eCIPstatus GPRSA6::getCIPstatus()
+enum A6GPRS::eCIPstatus A6GPRS::getCIPstatus()
 {
   enum eCIPstatus es = IP_STATUS_UNKNOWN;
   gsm.RXFlush();
@@ -83,17 +83,17 @@ enum GPRSA6::eCIPstatus GPRSA6::getCIPstatus()
   return es;
 }
 
-char *GPRSA6::getCIPstatusString(enum eCIPstatus i)
+char *A6GPRS::getCIPstatusString(enum eCIPstatus i)
 {
   return statusnames[i];
 }
 
-char *GPRSA6::getCIPstatusString()
+char *A6GPRS::getCIPstatusString()
 {
   return statusnames[getCIPstatus()];
 }
 
-bool GPRSA6::startIP(char *apn,char*user,char *pwd)  // apn, username, password
+bool A6GPRS::startIP(char *apn,char*user,char *pwd)  // apn, username, password
 {
   bool rc = false;
   cid = 1; //gsm.getcid();
@@ -127,12 +127,12 @@ bool GPRSA6::startIP(char *apn,char*user,char *pwd)  // apn, username, password
   return rc;
 }
 
-bool GPRSA6::startIP(char *apn)  // apn
+bool A6GPRS::startIP(char *apn)  // apn
 {
   return startIP(apn,"","");
 }
 
-bool GPRSA6::stopIP()
+bool A6GPRS::stopIP()
 {
   bool rc = false;
   gsm.RXFlush();
@@ -141,7 +141,7 @@ bool GPRSA6::stopIP()
   return rc;
 }
 
-GPRSA6::ePSstate GPRSA6::getPSstate()
+A6GPRS::ePSstate A6GPRS::getPSstate()
 {
   ePSstate eps = PS_UNKNOWN;
   gsm.RXFlush();
@@ -156,7 +156,7 @@ GPRSA6::ePSstate GPRSA6::getPSstate()
   return eps;
 }
 
-bool GPRSA6::setPSstate(GPRSA6::ePSstate eps)
+bool A6GPRS::setPSstate(A6GPRS::ePSstate eps)
 {
   bool rc = false;
   gsm.RXFlush();
@@ -172,7 +172,7 @@ bool GPRSA6::setPSstate(GPRSA6::ePSstate eps)
   return waitresp("OK\r\n",2000);
 }
 
-bool GPRSA6::getLocalIP(char *ip)
+bool A6GPRS::getLocalIP(char *ip)
 {
   bool rc = false;
   gsm.RXFlush();
@@ -180,7 +180,7 @@ bool GPRSA6::getLocalIP(char *ip)
   GetLineWithPrefix(NULL,ip,20,2000);
   return waitresp("OK\r\n",2000);
 }
-bool GPRSA6::connectTCPserver(char*path,int port)
+bool A6GPRS::connectTCPserver(char*path,int port)
 {
   bool rc = false;
   CIPstatus = getCIPstatus();
@@ -198,7 +198,7 @@ bool GPRSA6::connectTCPserver(char*path,int port)
   }
   return rc;
 }
-bool GPRSA6::sendToServer(char*msg)
+bool A6GPRS::sendToServer(char*msg)
 {
   bool rc = false;
   getCIPstatus();
@@ -216,7 +216,7 @@ bool GPRSA6::sendToServer(char*msg)
   }
   return rc;
 }
-bool GPRSA6::sendToServer(char*msg,int length)
+bool A6GPRS::sendToServer(char*msg,int length)
 {
   bool rc = false;
   getCIPstatus();
@@ -236,7 +236,7 @@ bool GPRSA6::sendToServer(char*msg,int length)
   return rc;
 }
 
-bool GPRSA6::sendToServer(byte*msg,int length)
+bool A6GPRS::sendToServer(byte*msg,int length)
 {
   bool rc = false;
   char buff[10];

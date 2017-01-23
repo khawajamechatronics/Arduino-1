@@ -10,7 +10,7 @@ void HW_SERIAL_EVENT();
 char comm_buf[COMM_BUF_LEN];  // communication buffer +1 for 0x00 termination
 int inlevel, outlevel;        // data in comm_buf
 
-bool GPRSA6Device::begin(long baudrate)
+bool A6GPRSDevice::begin(long baudrate)
 {
   bool rc = false;
   HW_SERIAL.begin(A6_BAUDRATE);
@@ -26,16 +26,18 @@ bool GPRSA6Device::begin(long baudrate)
   return rc;
 }
 
-bool GPRSA6Device::begin()
+bool A6GPRSDevice::begin()
 {
   return begin(A6_BAUDRATE);
 }
-// ATV1
-GPRSA6Device::GPRSA6Device(){
+
+A6GPRSDevice::A6GPRSDevice(){
 	rxcount = 0;
 	txcount = 0;
 }
 
+A6GPRSDevice::~A6GPRSDevice(){
+}
 void push(char c)
 {
 //  DebugWrite(c);
@@ -44,7 +46,7 @@ void push(char c)
     inlevel = 0;
 }
 
-char GPRSA6Device::pop()
+char A6GPRSDevice::pop()
 {
   char c;
   if (inlevel == outlevel)
@@ -61,7 +63,7 @@ char GPRSA6Device::pop()
   return c;
 }
 
-void GPRSA6Device::ModemWrite(char c)
+void A6GPRSDevice::ModemWrite(char c)
 {
   HW_SERIAL.write(c);
 }
@@ -70,7 +72,7 @@ void GPRSA6Device::ModemWrite(char c)
  * Check incoming buffer for desired string, return true if found in time else false
  * Only use this version during setup time as serialEvent not yet available
  */
-bool GPRSA6Device::waitresp(char const *response_string,int32_t timeout)
+bool A6GPRSDevice::waitresp(char const *response_string,int32_t timeout)
 {
   int lengthtotest = strlen(response_string);
   char *nextChar = response_string;
@@ -104,7 +106,7 @@ bool GPRSA6Device::waitresp(char const *response_string,int32_t timeout)
   return TimeOut > millis();  // finished before time is up
 }
 
-bool GPRSA6Device::GetLineWithPrefix(char const *px,char *outbuf, int bufsize,int32_t timeout)
+bool A6GPRSDevice::GetLineWithPrefix(char const *px,char *outbuf, int bufsize,int32_t timeout)
 {
   int lengthtotest = strlen(px);
   char *nextChar = px;
@@ -162,7 +164,7 @@ bool GPRSA6Device::GetLineWithPrefix(char const *px,char *outbuf, int bufsize,in
   return TimeOut > millis();  // still have time left 
 }
 
-void GPRSA6Device::RXFlush()
+void A6GPRSDevice::RXFlush()
 {
   volatile char c;
   while (HW_SERIAL.available())

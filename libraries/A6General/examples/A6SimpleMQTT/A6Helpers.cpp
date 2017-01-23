@@ -1,5 +1,5 @@
 /*
- *   Following functions are implemented on behalf of the GPRSA6Device class
+ *   Following functions are implemented on behalf of the A6GPRSDevice class
  *   None of them HAVE to be present but I would recommend that at least HWRESET is implemented
  *   else the modem may never get  going
  */
@@ -13,7 +13,7 @@
 #define DEBUG_SERIAL Serial
 
 
-void GPRSA6Device::HWReset()
+void A6GPRSDevice::HWReset()
 {
   /*
    * The A6 modem takes about 70mA throuh the reset pin which is too much for an Arduino GPIO pin
@@ -21,7 +21,6 @@ void GPRSA6Device::HWReset()
    * Connect the emitter of the transistor to ground and the collector to the A6 reset pin
    * http://electronics.stackexchange.com/questions/82222/how-to-use-a-transistor-to-pull-a-pin-low
    */
-  DEBUG_SERIAL.println("HW reset");
   pinMode(TRANSISTOR_CONTROL,OUTPUT);
   digitalWrite(TRANSISTOR_CONTROL,LOW);
   digitalWrite(TRANSISTOR_CONTROL,HIGH);
@@ -29,27 +28,27 @@ void GPRSA6Device::HWReset()
   digitalWrite(TRANSISTOR_CONTROL,LOW);  
 }
 
-void GPRSA6Device::DebugWrite(uint16_t c)
+void A6GPRSDevice::DebugWrite(uint16_t c)
 {
   if (enableDebug)
     DEBUG_SERIAL.print(c);
 }
-void GPRSA6Device::DebugWrite(int c)
+void A6GPRSDevice::DebugWrite(int c)
 {
   if (enableDebug)
     DEBUG_SERIAL.print(c);
 }
-void GPRSA6Device::DebugWrite(char c)
+void A6GPRSDevice::DebugWrite(char c)
 {
   if (enableDebug)
     DEBUG_SERIAL.write(c);
 }
-void GPRSA6Device::DebugWrite(char *s)
+void A6GPRSDevice::DebugWrite(char *s)
 {
   if (enableDebug)
     DEBUG_SERIAL.print(s);
 }
-void GPRSA6Device::DebugWrite(const __FlashStringHelper*s)
+void A6GPRSDevice::DebugWrite(const __FlashStringHelper*s)
 {
   if (enableDebug)
     DEBUG_SERIAL.print(s);  

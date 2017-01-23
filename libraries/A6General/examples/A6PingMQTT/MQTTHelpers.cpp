@@ -15,9 +15,9 @@
 #define BROKER_ADDRESS "test.mosquitto.org"  // public broker
 #define BROKER_PORT 1883
 extern char imei[];
-extern A6_MQTT MQTT;
+extern A6MQTT MQTT;
 extern uint16_t messageid;
-char *topic = "/blah";
+char *topic = "blah";
 
 static char linebuff[50];
 #define PACKET_ID 12345
@@ -25,13 +25,13 @@ static char linebuff[50];
  * This function is called once in main setup
  * OnDisconnect below also calls AutoConnect but it is not coumpulsory
  */
-void A6_MQTT::AutoConnect()
+void A6MQTT::AutoConnect()
 {
   if (gsm.connectTCPserver(BROKER_ADDRESS,BROKER_PORT))
   {
     Serial.println("TCP up");
     // connect, no userid, password or Will
-    MQTT.waitingforConnack = connect(imei, 0, 0, "", "", 1, 0, 0, 0, "", "");
+    MQTT.waitingforConnack = connect(imei, false);
   }
   else
     Serial.println("TCP down");
@@ -41,7 +41,7 @@ void A6_MQTT::AutoConnect()
  * This function ic called upon receiving a CONNACK message
  * Note that you should not assume that the connection was successful - check it!
  */
-void A6_MQTT::OnConnect(enum eConnectRC rc)
+void A6MQTT::OnConnect(enum eConnectRC rc)
 {
   switch (rc)
   {
@@ -66,7 +66,7 @@ void A6_MQTT::OnConnect(enum eConnectRC rc)
 /*
  * Called if the subscribe request completed OK
  */
-void A6_MQTT::OnSubscribe(uint16_t pi)
+void A6MQTT::OnSubscribe(uint16_t pi)
 {
   sprintf(linebuff,"Subscribed to packet id %u, response %u",PACKET_ID,pi);
   Serial.println(linebuff);
@@ -75,7 +75,7 @@ void A6_MQTT::OnSubscribe(uint16_t pi)
 /*
  * Called when a piblish message is received.
  */
-void A6_MQTT::OnMessage(char *topic,char *message,bool dup, bool ret,A6_MQTT::eQOS qos)
+void A6MQTT::OnMessage(char *topic,char *message,bool dup, bool ret,A6MQTT::eQOS qos)
 {
   if (dup)
     Serial.print("DUP ");
@@ -91,7 +91,7 @@ void A6_MQTT::OnMessage(char *topic,char *message,bool dup, bool ret,A6_MQTT::eQ
  * This function when the the client published a message with QOS > 0 and received confirmation that
  * publish completed OK
  */
-void A6_MQTT::OnPubAck(uint16_t mid)
+void A6MQTT::OnPubAck(uint16_t mid)
 {
   sprintf(linebuff,"Message %u published, %u acknowledged",messageid,mid);
   Serial.println(linebuff);
@@ -101,7 +101,7 @@ void A6_MQTT::OnPubAck(uint16_t mid)
  * Called when the client is dsicinnected from the broker
  * My example choosed to remake tre connection
  */
-void A6_MQTT::OnDisconnect()
+void A6MQTT::OnDisconnect()
 {
   Serial.println("Broker disconnected");
   MQTT.AutoConnect();

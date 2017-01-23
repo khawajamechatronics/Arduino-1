@@ -2,13 +2,13 @@
 #define  A6SERVICE_H
 #include "A6Modem.h"
 
-class GPRSA6: public virtual GPRSA6Device
+class A6GPRS: public virtual A6GPRSDevice
 {
   public:
     enum eCIPstatus {IP_INITIAL,IP_START,IP_CONFIG,IP_IND,IP_GPRSACT,IP_STATUS,TCPUDP_CONNECTING,IP_CLOSE,CONNECT_OK,IP_STATUS_UNKNOWN };
     enum ePSstate { DETACHED,ATTACHED,PS_UNKNOWN };
-    GPRSA6(); // constructor
-    ~GPRSA6(); // destructor
+    A6GPRS(); // constructor
+    ~A6GPRS(); // destructor
     bool getIMEI(char*);
     bool getCIMI(char*);
     bool getRTC(char*);
@@ -32,6 +32,6 @@ class GPRSA6: public virtual GPRSA6Device
     int cid;  // only 1 per instance of class
 };
 
-extern GPRSA6 gsm;  // instance
+extern A6GPRS gsm;  // instance
 #endif
 

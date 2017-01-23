@@ -12,7 +12,7 @@
 char buff[30];    // We must send at least 1 packet within the chosen keepalive time
                   // If you have nothing else to send, send at least a  ping
 #define APN "uinternet"  // write your APN here
-A6_MQTT MQTT(30);
+A6MQTT MQTT(30);
 uint32_t nextpublish;
 char topic[30];
 char imei[20];

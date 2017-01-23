@@ -39,9 +39,9 @@
 #define MQ_NO_ACKNOWLEDGEMENT  255
 
 struct sFixedHeader {
-  byte retain:1;
+  bool retain:1;
   byte qos:2;
-  byte dup:1;
+  bool dup:1;
   byte controlpackettype:4;
   byte rl;
 };
@@ -82,7 +82,7 @@ struct sVariableString {
 #define PASSWORD_FLAG (1<<6)
 #define USERNAME_FLAG (1<<7)
 
-class A6_MQTT
+class A6MQTT
 {
   public:
     enum eConnectRC {CONNECT_RC_ACCEPTED, CONNECT_RC_REFUSED_PROTOCOL,CONNECT_RC_REFUSED_IDENTIFIER};
@@ -90,15 +90,16 @@ class A6_MQTT
     bool connectedToServer;
     bool waitingforConnack;
     volatile unsigned long _PingNextMillis = 0;
-    A6_MQTT(unsigned long KeepAlive);
-    bool connect(char *ClientIdentifier, char UserNameFlag, char PasswordFlag, char *UserName, char *Password, char CleanSession, char WillFlag, char WillQoS, char WillRetain, char *WillTopic, char *WillMessage);
-    bool publish(char *Topic, char *Message); // QOS 0 no dup no retain
+    A6MQTT(unsigned long KeepAlive);
+    bool connect(char *ClientIdentifier, bool CleanSession, bool UserNameFlag, bool PasswordFlag, char *UserName, char *Password, bool WillFlag,
+               	eQOS WillQoS, bool WillRetain, char *WillTopic, char *WillMessage);
+    bool connect(char *ClientIdentifier, bool CleanSession);
+	bool publish(char *Topic, char *Message); // QOS 0 no dup no retain
     bool publish(char *Topic, char *Message, bool , bool ); // dup,retain,qos=0
     bool publish(char *Topic, char *Message, bool , bool, eQOS,uint16_t packetid ); // dup,retain,qos
     bool subscribe(unsigned int MessageID, char *SubTopic, eQOS SubQoS);
     bool unsubscribe(unsigned int MessageID, char *SubTopic);
     bool disconnect(void);
-    bool available(void);
     bool ping(void);
     void Parse();
     

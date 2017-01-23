@@ -14,7 +14,7 @@
   * You may send publish messages using the same parameters from another MQTT client and you will see the message
   * displayed on the serial terminal. However it doesnt stop the disconnect mechanism working
   */
-//#define KEEP_PINGING // comment out to demonstrate the effect of not ping and the connection going down
+#define KEEP_PINGING // comment out to demonstrate the effect of not ping and the connection going down
 #include "A6Services.h"
 #include "A6MQTT.h"
 
@@ -22,7 +22,7 @@ char buff[30];    // We must send at least 1 packet within the chosen keepalive 
                   // If you have nothing else to send, send at least a  ping
 #define APN "uinternet"  // write your APN here
 #define KEEP_ALIVE_TIME 30
-A6_MQTT MQTT(KEEP_ALIVE_TIME);
+A6MQTT MQTT(KEEP_ALIVE_TIME);
 
 char imei[20];
 

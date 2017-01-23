@@ -25,7 +25,7 @@
 #include "A6MQTT.h"
 #include <avr/pgmspace.h>
 
-A6_MQTT::A6_MQTT(unsigned long KeepAlive)
+A6MQTT::A6MQTT(unsigned long KeepAlive)
 {
   _KeepAliveTimeOut = KeepAlive;
 //  gsm.doParsing = false;  // dont parse until connected to server
@@ -45,7 +45,7 @@ uint16_t bswap(uint16_t w)
 }
 char *Protocolname = "MQTT";
 // Using version 3.1.1  Protocol name MQTT, version 4
-bool A6_MQTT::connect(char *ClientIdentifier, char UserNameFlag, char PasswordFlag, char *UserName, char *Password, char CleanSession, char WillFlag, char WillQoS, char WillRetain, char *WillTopic, char *WillMessage)
+bool A6MQTT::connect(char *ClientIdentifier, bool CleanSession, bool UserNameFlag, bool PasswordFlag, char *UserName, char *Password, bool WillFlag, eQOS WillQoS, bool WillRetain, char *WillTopic, char *WillMessage)
 {
  // ConnectionAcknowledgement = MQ_NO_ACKNOWLEDGEMENT ;
   // calculate overall size of connect headers + payload;
@@ -106,7 +106,11 @@ bool A6_MQTT::connect(char *ClientIdentifier, char UserNameFlag, char PasswordFl
   return gsm.sendToServer(mqttbuffer,connsize);
 }
 
-bool A6_MQTT::subscribe(unsigned int MessageID, char *SubTopic, eQOS SubQoS)
+bool A6MQTT::connect(char *ClientIdentifier, bool CleanSession)
+{
+	return connect(ClientIdentifier,CleanSession,false,false,NULL,NULL,false,A6MQTT::QOS_0,false,NULL,NULL);
+}
+bool A6MQTT::subscribe(unsigned int MessageID, char *SubTopic, eQOS SubQoS)
 {
   bool rc = false;
   if (connectedToServer)
@@ -138,7 +142,7 @@ bool A6_MQTT::subscribe(unsigned int MessageID, char *SubTopic, eQOS SubQoS)
  *  We look for complete modem messages & react to +CIPRCV, tgr4ansfer n bytes tp mqtt parser
  *  wait for cr/lf cr , as terminators 
  */
-void A6_MQTT::Parse()
+void A6MQTT::Parse()
 {
   char c = gsm.pop();
   while (c != -1)
@@ -197,7 +201,7 @@ void A6_MQTT::Parse()
 /*
  * buffer modemmessage contains mqttmsglength bytes
  */
-void A6_MQTT::mqttparse()
+void A6MQTT::mqttparse()
 {
   struct sFixedHeader *pFH = (struct sFixedHeader *)modemmessage;
   struct sSubackVariableHeader *pSVH;
@@ -291,7 +295,7 @@ void A6_MQTT::mqttparse()
   }
 }
 
-bool A6_MQTT::ping()
+bool A6MQTT::ping()
 {
   bool rc = false;
   if (connectedToServer)
@@ -310,17 +314,17 @@ bool A6_MQTT::ping()
   return rc;
 }
 
-bool A6_MQTT::publish(char *Topic, char *Message)
+bool A6MQTT::publish(char *Topic, char *Message)
 {
-  return publish(Topic,Message,false,false,A6_MQTT::QOS_0,0);
+  return publish(Topic,Message,false,false,A6MQTT::QOS_0,0);
 }
 
-bool A6_MQTT::publish(char *Topic, char *Message, bool dup, bool ret)
+bool A6MQTT::publish(char *Topic, char *Message, bool dup, bool ret)
 {
-  return publish(Topic,Message,dup,ret,A6_MQTT::QOS_0,0);
+  return publish(Topic,Message,dup,ret,A6MQTT::QOS_0,0);
 }
 
-bool A6_MQTT::publish(char *Topic, char *Message, bool dup , bool retain ,eQOS qos ,uint16_t packetid) // dup,retain,qos
+bool A6MQTT::publish(char *Topic, char *Message, bool dup , bool retain ,eQOS qos ,uint16_t packetid) // dup,retain,qos
 {
   bool rc = false;
   uint16_t *pW;
@@ -354,7 +358,7 @@ bool A6_MQTT::publish(char *Topic, char *Message, bool dup , bool retain ,eQOS q
   return rc;
 }
 
-bool A6_MQTT::disconnect()
+bool A6MQTT::disconnect()
 {
   bool rc = false;
   if (connectedToServer)
@@ -371,7 +375,7 @@ bool A6_MQTT::disconnect()
   return rc;  
 }
 
- bool A6_MQTT::unsubscribe(unsigned int MessageID, char *SubTopic)
+ bool A6MQTT::unsubscribe(unsigned int MessageID, char *SubTopic)
  {
   bool rc = false;
   if (connectedToServer)
@@ -392,7 +396,7 @@ bool A6_MQTT::disconnect()
   return rc;
  }
 
- bool A6_MQTT::pubrel(uint16_t pi)
+ bool A6MQTT::pubrel(uint16_t pi)
  {
   bool rc = false;
   if (connectedToServer)
@@ -410,7 +414,7 @@ bool A6_MQTT::disconnect()
   return rc; 
  }
 
-bool A6_MQTT::puback(uint16_t pi) // pi is BE format
+bool A6MQTT::puback(uint16_t pi) // pi is BE format
 {
   bool rc = false;
   if (connectedToServer)
@@ -427,7 +431,7 @@ bool A6_MQTT::puback(uint16_t pi) // pi is BE format
   } 
   return rc; 	
 }
-bool A6_MQTT::pubcomp(uint16_t pi) // pi is BE format
+bool A6MQTT::pubcomp(uint16_t pi) // pi is BE format
 {
   bool rc = false;
   if (connectedToServer)

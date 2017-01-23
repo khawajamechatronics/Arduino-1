@@ -12,7 +12,7 @@
 char buff[100];    // We must send at least 1 packet within the chosen keepalive time
                   // If you have nothing else to send, send at least a  ping
 #define APN "uinternet"  // write your APN here
-A6_MQTT MQTT(30);
+A6MQTT MQTT(30);
 uint32_t nextpublish;
 char topic[30];
 char imei[20];
@@ -24,15 +24,15 @@ void setup() {
    // A6 uses default baud 115200
    // power up the board, do hardware reset & get ready to execute commands
    DEBUG_SERIAL.println("A6 Simple MQTT");
-   gsm.enableDebug = true;
   if (gsm.begin()) 
   {
     DEBUG_SERIAL.println("GSM up");
     // we need a unique userid when logging on to the broker. We also need a unique topic
     // name. We'll use this devices IMIE tp get that.
     if (!gsm.getIMEI(imei))
-      strcpy(imei,"defaultimei");
+      strcpy(imei,"defaultime");
     strcpy(topic,imei);
+    strcat(topic,"/test");
     // setup GPRS connection with your provider
     if (gsm.startIP(APN))
     {

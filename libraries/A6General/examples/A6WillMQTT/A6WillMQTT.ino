@@ -13,7 +13,7 @@ char buff[100];
 #define APN "uinternet"  // write your APN here
 #define KEEPALIVE 25
 
-A6_MQTT MQTT(KEEPALIVE);
+A6MQTT MQTT(KEEPALIVE);
 uint32_t nextpublish;
 char *willtopic = "Henry/will";
 char *willmessage = "byebye";
