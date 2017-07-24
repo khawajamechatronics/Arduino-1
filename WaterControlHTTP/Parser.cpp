@@ -33,6 +33,7 @@ void Parse(char * s)
 {
   unsigned long secs;
   char tpltemp[10];
+  char rbtemp[10];
   Serial.print("Parse:");
   Serial.println(s);
  // Serial.println(gsm.GetClock());
@@ -93,7 +94,9 @@ void Parse(char * s)
         case '*':  // truncated EEPROM data
           // bug fix, cannot call EEPROMGetIndex twice as result overidden
           strcpy(tpltemp,EEPROMGetIndex(TPL0));
-          sprintf(tempbuf,"imei=%s&epoch=%lu&tpl0=%s&tpl1=%s",IMEI,ep,tpltemp,EEPROMGetIndex(TPL1));
+        //  strcpy(rbtemp,EEPROMGetIndex(REBOOT));
+          strcpy(rbtemp,"7300");
+          sprintf(tempbuf,"imei=%s&epoch=%lu&tpl0=%s&tpl1=%s&reboot=%s",IMEI,ep,tpltemp,EEPROMGetIndex(TPL1),rbtemp);
           SendLongMessage();
           break;
         case '?':   // full EEPROM data
@@ -144,6 +147,7 @@ void Parse(char * s)
         case 'e':
         case 'f':
         case 'g':
+        case 'h':
           EEPROMSetIndex((eEEPROMIndex)(*s-0x57),s+2);  
           break;
         case 'A': // 'A'->10
@@ -153,6 +157,7 @@ void Parse(char * s)
         case 'E':
         case 'F':
         case 'G':
+        case 'H':
           EEPROMSetIndex((eEEPROMIndex)(*s-0x37),s+2);   
           break;
       }

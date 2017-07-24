@@ -24,8 +24,10 @@
   int gprstimeout;        // e
   unsigned Tpl1;          // f
   char wwwpath[20];      // g
+//  unsigned reboottime;    //h
  };
 
+//enum eEEPROMIndex {TPL0,LIS,DP,SmS,EA,EP,ER,APN,SENDSMS,RR,POL,PW,HTTPs,useSSL,GPRSTO,TPL1,WWWPATH,REBOOT};
 enum eEEPROMIndex {TPL0,LIS,DP,SmS,EA,EP,ER,APN,SENDSMS,RR,POL,PW,HTTPs,useSSL,GPRSTO,TPL1,WWWPATH};
 void EEPROMSetIndex(enum eEEPROMIndex i,char * s);
 char *EEPROMGetIndex(enum eEEPROMIndex i);

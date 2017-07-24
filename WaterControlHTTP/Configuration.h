@@ -7,6 +7,7 @@
 //#define HARDWARE_SPI // forces use of HW CLK,MOSI,MISO
 
 #define ANTENNA_BUG
+//#define USE_BARO
 
 // 0,1 UART
 // 2,3,4 unused
@@ -22,8 +23,13 @@ const int ONBOARD_LED = 13;
 // now need to use 20/21 for I2C so move to 18/19
 // couldnt use 2/3 because pins already soldered in and are too short
 // needs to move modem serial from serial1 to serial2
-const int METER_DRDY_1 = 18; // alarm must be an interrupt pin
-const int METER_DRDY_2 = 19; // alarm must be an interrupt pin
+#ifdef USE_BARO
+const int METER_DRDY_1 = 2; // alarm must be an interrupt pin
+const int METER_DRDY_2 = 3; // alarm must be an interrupt pin
+#else
+const int METER_DRDY_1 = 20; // alarm must be an interrupt pin
+const int METER_DRDY_2 = 21; // alarm must be an interrupt pin
+#endif
 // water meter observer calibration
 
 // MEGA MISO 50 MOSI 51  SCK 52
@@ -46,9 +52,10 @@ const int METER_DRDY_2 = 19; // alarm must be an interrupt pin
 #define DEFAULT_REPORT_RATE (600L)
 #define DEFAULT_LEAK_IN_SECS 1800
 #define DEFAULT_TICKS_PER_LITER 265
-#define DEFAULT_HTTP_SERVER "david-henry.dyndns.tv"
+#define DEFAULT_HTTP_SERVER "henrylineage.com" //"david-henry.dyndns.tv"
 #define DEFAULT_GPRS_TIMEOUT 15
 #define DEFAULT_WWW_PATH "/webdata/WC"
+#define DEFAULT_REBOOT_TIME 7300
 
 // Useful universal macros
 #define SMS_LENGTH 160

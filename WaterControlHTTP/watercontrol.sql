@@ -59,5 +59,4 @@ use WaterMeter;
 #alter table EEPROM add epoch integer;
 #alter table EEPROM change imsi imei char(15);
 #select * from EEPROM order by TS desc;
-select * from rawdata order by serverts desc limit 100;
-
+select * from rawdata order by serverts desc limit 1000;

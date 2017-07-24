@@ -40,6 +40,8 @@ void InitEepromData()
   sprintf(TempBuf,"%d",DEFAULT_GPRS_TIMEOUT);
   EEPROMSetIndex(GPRSTO,TempBuf);            // time for at+sapbr=1,1 response
   EEPROMSetIndex(WWWPATH,DEFAULT_WWW_PATH); 
+//  sprintf(TempBuf,"%d",DEFAULT_REBOOT_TIME);
+//  EEPROMSetIndex(REBOOT,TempBuf);
 }
 
 void PrintEepromData()
@@ -62,6 +64,7 @@ void PrintEepromData()
   Serial.println(EEPROMGetIndex(GPRSTO));
   Serial.println(EEPROMGetIndex(TPL1));
   Serial.println(EEPROMGetIndex(WWWPATH));
+ // Serial.println(EEPROMGetIndex(REBOOT));
 }
 
 void eepromgetarray(int startaddress,uint8_t *target,int l)
@@ -185,6 +188,10 @@ void EEPROMSetIndex(enum eEEPROMIndex i,char * s)
     case WWWPATH:
       eepromsetarray(offsetof(struct eEEPROMmap,wwwpath),s,sizeof(((struct eEEPROMmap*)0)->wwwpath));
       break;
+//    case REBOOT:
+//      stemp = atoi(s);
+//      eepromsetarray(offsetof(struct eEEPROMmap,reboottime),(uint8_t *)&stemp,sizeof(unsigned));
+//      break;
   }
 }
 static char eeprombuf[30];  // just for eepromgetindex
@@ -253,6 +260,10 @@ char * EEPROMGetIndex(enum eEEPROMIndex i)
     case WWWPATH:
       eepromgetstring(offsetof(struct eEEPROMmap,wwwpath),eeprombuf,sizeof(((struct eEEPROMmap*)0)->wwwpath));
       break;
+//    case REBOOT:
+//      eepromgetarray(offsetof(struct eEEPROMmap,reboottime),(uint8_t *)&stemp,sizeof(unsigned));
+//      sprintf(eeprombuf,"%u",stemp);
+//      break;
   }
 //  Serial.print("GI:");Serial.println(eeprombuf);
   return eeprombuf;

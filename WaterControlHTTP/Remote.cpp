@@ -210,12 +210,12 @@ bool RemoteSendMessage(char * srv, char *url, int port) // to http server
 
 bool RemoteSendSMS(char *msg, char *pn)
 {
-  return sms.SendSMS(pn, msg);
+  return sms.SendSMS(pn, msg) == 1;
 }
 
 bool RemoteSendSMS(char *msg)
 {
-  return sms.SendSMS(EEPROMGetIndex(DP),msg);
+  return sms.SendSMS(EEPROMGetIndex(DP),msg) == 1;
 }
 
   // convert output string from SIM900 to unix type
