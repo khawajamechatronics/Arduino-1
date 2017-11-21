@@ -1,0 +1,31 @@
+#################################################
+# Syntax Coloring Map For PDU Library
+# http://hardwarefun.com/projects/joystick-shield
+#################################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+PDU	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+
+encodePDU	KEYWORD2
+decodePDU	KEYWORD2
+setRecepient	KEYWORD2
+setMessage	KEYWORD2
+isetCharSet	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+# Alphabets
+
+ALPHABET_7BIT 	LITERAL1
+ALPHABET_8BIT	LITERAL1
+ALPHABET_16BIT	LITERAL1
