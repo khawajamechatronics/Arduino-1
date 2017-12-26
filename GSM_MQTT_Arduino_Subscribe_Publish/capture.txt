@@ -1,0 +1,70 @@
+Starting...
+RS
++PDP: DEACT
+NORMAL POWER DOWN
+RS
+ÿÿ
+RDY
++CFUN: 1
++CPIN: READY
+Call Ready
+ATOK
++++AT
+OK
+ATE1
+OK
+AT+CREG?
++CREG: 0,1
+OK
+AT+CIPMUX=0
+OK
+AT+CIPMODE=1
+OK
+AT+CGATT?
++CGATT: 1
+OK
+AT+CIPSTATUS
+OK
+STATE: IP INITIAL
+AT+CSTT="AIRTELGPRS.COM"
+OK
+AT+CIPSTATUS
+OK
+STATE: IP START
+AT+CIICR
+OK
+AT+CIPSTATUS
+OK
+STATE: IP GPRSACT
+AT+CIFSR
+10.169.11.245
+AT+CIPSTATUS
+OK
+STATE: IP STATUS
+AT+CIPSTART="TCP","test.mosquitto.org","1883"
+OK
+CONNECT
+MQTT.TCP_Flag = True
+2
+2
+Connect Acknowledgment
+ Connection Accepted
+0
+0
+PING Response
+3
+3
+Subscribe Acknowledgment
+ Message ID :1
+18
+18
+Publish message
+Topic : 'SampleTopic' Message :'Hello'
+11
+SampleTopic
+5
+Hello
+0
+0
+PING Response
+ 

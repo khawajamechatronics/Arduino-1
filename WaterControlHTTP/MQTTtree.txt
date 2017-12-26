@@ -1,0 +1,9 @@
+mosquitto tree
+MQTT is a publish/subscribe model so no provision for identifying source - need to add it in payload
+watercontrol
+	rawdata
+		payload id:localtimestamp:meter1:meter2:uptime:flags
+	action
+		payload id:localtimestamp:action
+	properties
+		payload id:localtimestamp:tpl:IMEI:

@@ -243,6 +243,6 @@ ipch
 *.mkv
 *.pdf
 giladcar/giladcar.ino
-*.txt
+#*.txt
 libraries/GSMSHIELD/new 1.txt
 libraries/GSMSHIELD/new 1.txt
